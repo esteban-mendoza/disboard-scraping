@@ -6,7 +6,14 @@
 import scrapy
 
 
-class DisboardItem(scrapy.Item):
+class ServerItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    scrape_time = scrapy.Field()
+    platform_link = scrapy.Field()
+    guild_id = scrapy.Field()
+    discord_invite_code = scrapy.Field()
+    server_name = scrapy.Field()
+    server_description = scrapy.Field()
+    tags = scrapy.Field()
+    category = scrapy.Field()
