@@ -1,4 +1,4 @@
-from disboard.items import ServerItem
+from disboard.items import DisboardServerItem
 from datetime import datetime
 import scrapy
 from scrapy_playwright.page import PageMethod
@@ -35,29 +35,28 @@ class ServersSpider(scrapy.Spider):
         for server_info, server_body in zip(
             server_info_selectorlist, server_body_selectorlist
         ):
-            server_item = ServerItem()
+            platform_link = server_info.css(".server-name a::attr(href)").get()
+            guild_id = platform_link.split("/")[-1]
+            server_name = server_info.css(".server-name a::text").get().strip()
 
-            server_item["scrape_time"] = scrape_time
-            server_item["platform_link"] = server_info.css(
-                ".server-name a::attr(href)"
-            ).get()
-            server_item["guild_id"] = server_item["platform_link"].split("/")[-1]
-            server_item["server_name"] = (
-                server_info.css(".server-name a::text").get().strip()
-            )
-
-            server_item["server_description"] = "".join(
+            server_description = "".join(
                 server_body.css(".server-description::text").getall()
             ).strip()
 
             data_ids = server_body.css(".tag::attr(data-id)").getall()
             tags = server_body.css(".tag::attr(title)").getall()
-            server_item["tags"] = [{key: value} for key, value in zip(data_ids, tags)]
+            tags = [{key: value} for key, value in zip(data_ids, tags)]
 
-            server_item["category"] = (
-                server_info.css(".server-category::text").get().strip()
+            category = server_info.css(".server-category::text").get().strip()
+            yield DisboardServerItem(
+                scrape_time=scrape_time,
+                platform_link=platform_link,
+                guild_id=guild_id,
+                server_name=server_name,
+                server_description=server_description,
+                tags=tags,
+                category=category,
             )
-            yield server_item
 
     async def error_handler(self, failure):
         page = failure.request.meta["playwright_page"]

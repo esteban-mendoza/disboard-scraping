@@ -6,7 +6,7 @@
 import scrapy
 
 
-class ServerItem(scrapy.Item):
+class DisboardServerItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     scrape_time = scrapy.Field()
