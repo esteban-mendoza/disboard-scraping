@@ -42,7 +42,9 @@ class ServersSpider(scrapy.Spider):
                 ".server-name a::attr(href)"
             ).get()
             server_item["guild_id"] = server_item["platform_link"].split("/")[-1]
-            server_item["server_name"] = server_info.css(".server-name a::text").get()
+            server_item["server_name"] = (
+                server_info.css(".server-name a::text").get().strip()
+            )
 
             server_item["server_description"] = "".join(
                 server_body.css(".server-description::text").getall()
@@ -50,9 +52,11 @@ class ServersSpider(scrapy.Spider):
 
             data_ids = server_body.css(".tag::attr(data-id)").getall()
             tags = server_body.css(".tag::attr(title)").getall()
-            server_item["tags"] = list(zip(data_ids, tags))
+            server_item["tags"] = [{key: value} for key, value in zip(data_ids, tags)]
 
-            server_item["category"] = server_info.css(".server-category::text").get()
+            server_item["category"] = (
+                server_info.css(".server-category::text").get().strip()
+            )
             yield server_item
 
     async def error_handler(self, failure):
