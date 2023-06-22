@@ -1,64 +1,59 @@
-from disboard.items import DisboardServerItem
-from datetime import datetime
+"""
+This module contains a Scrapy spider that crawls the Disboard website, starting from the /servers endpoint,
+and follows the pagination links.
+"""
+
+from typing import Any, Dict, Generator
+from disboard.commons.helpers import extract_disboard_server_items
+from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 import scrapy
 from scrapy_playwright.page import PageMethod
 
-WEBCACHE_URL = "https://webcache.googleusercontent.com/search?q=cache:"
-
 
 class ServersSpider(scrapy.Spider):
-    name = "servers"
+    """
+    This spider crawls Disboard starting by the /servers endpoint
+    and following the pagination links.
+    """
+
+    name: str = "servers"
+    base_url: str = f"{WEBCACHE_URL}{DISBOARD_URL}"
+    default_request_args: Dict[str, Any] = {
+        "playwright": True,
+        "playwright_page_methods": [
+            PageMethod("wait_for_selector", ".server-name a"),
+        ],
+    }
 
     def start_requests(self):
-        url = f"{WEBCACHE_URL}https://disboard.org/servers"
+        """
+        Generate the initial request to the /servers endpoint.
+        """
+        url = f"{self.base_url}/servers"
         yield scrapy.Request(
-            url=url,
-            meta=dict(
-                playwright=True,
-                playwright_include_page=True,
-                playwright_page_methods=[
-                    PageMethod("wait_for_selector", ".server-name a"),
-                ],
-                errback=self.error_handler,
-            ),
+            url=url, meta={**self.default_request_args, "errback": self.error_handler}
         )
 
     def parse(self, response):
-        server_info_selectorlist = response.css(".server-info")
-        server_body_selectorlist = response.css(".server-body")
+        """
+        Parse the response and extract DisboardServerItems.
+        Follow the pagination links to request the next page.
+        """
+        yield from extract_disboard_server_items(response)
 
-        response_date = response.headers["Date"].decode()
-        scrape_time = datetime.strptime(
-            response_date, "%a, %d %b %Y %H:%M:%S %Z"
-        ).timestamp()
-
-        for server_info, server_body in zip(
-            server_info_selectorlist, server_body_selectorlist
-        ):
-            platform_link = server_info.css(".server-name a::attr(href)").get()
-            guild_id = platform_link.split("/")[-1]
-            server_name = server_info.css(".server-name a::text").get().strip()
-
-            server_description = "".join(
-                server_body.css(".server-description::text").getall()
-            ).strip()
-
-            data_ids = server_body.css(".tag::attr(data-id)").getall()
-            tags = server_body.css(".tag::attr(title)").getall()
-            tags = [{key: value} for key, value in zip(data_ids, tags)]
-
-            category = server_info.css(".server-category::text").get().strip()
-            yield DisboardServerItem(
-                scrape_time=scrape_time,
-                platform_link=platform_link,
-                guild_id=guild_id,
-                server_name=server_name,
-                server_description=server_description,
-                tags=tags,
-                category=category,
+        next_url = response.css(".next a::attr(href)").get()
+        if next_url is not None:
+            next_url = f"{self.base_url}{next_url}"
+            yield scrapy.Request(
+                url=next_url,
+                meta={**self.default_request_args, "errback": self.error_handler},
             )
 
     async def error_handler(self, failure):
+        """
+        Handle errors that occur during the crawling process.
+        Capture a screenshot and close the page.
+        """
         page = failure.request.meta["playwright_page"]
         await page.screenshot(path=f"screenshot-{page.url}.png")
         await page.close()
