@@ -1,6 +1,6 @@
 """
 This module contains a Scrapy spider that crawls the Disboard website
-starting from the /servers endpoint, and follows the pagination links.
+starting from the /servers endpoint, and follows pagination and tag links.
 """
 
 from typing import Any, Dict
@@ -12,8 +12,8 @@ from scrapy_playwright.page import PageMethod
 
 class ServersSpider(scrapy.Spider):
     """
-    This spider crawls Disboard starting by the /servers endpoint
-    and following the pagination links.
+    This spider crawls Disboard starting by the /servers endpoint, 
+    following pagination and tag links.
     """
 
     name: str = "servers"
