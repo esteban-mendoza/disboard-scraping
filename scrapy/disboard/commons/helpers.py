@@ -1,5 +1,5 @@
 from disboard.items import DisboardServerItem
-from scrapy.http import Response
+from scrapy.http import Response, Request
 from datetime import datetime
 
 
@@ -42,4 +42,34 @@ def extract_disboard_server_items(response: Response) -> DisboardServerItem:
             server_description=server_description,
             tags=tags,
             category=category,
+        )
+
+
+def request_next_url(self, response: Response) -> Request:
+    """
+    Given a response from a Disboard server list page, requests the next page.
+
+    This function is meant to be used in a scrapy.Spider.parse method.
+    """
+    next_url = response.css(".next a::attr(href)").get()
+    if next_url is not None:
+        next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}"
+        yield Request(
+            url=next_url,
+            meta={**self.default_request_args, "errback": self.error_handler},
+        )
+
+
+def request_all_tag_urls(self, response: Response) -> Request:
+    """
+    Given a response from a Disboard server list page, requests all tag pages.
+
+    This function is meant to be used in a scrapy.Spider.parse method.
+    """
+    tags = response.css(".tag::attr(title)").getall()
+    for tag in tags:
+        tag_url = f"{self.base_url}/servers/tag/{tag}"
+        yield Request(
+            url=tag_url,
+            meta={**self.default_request_args, "errback": self.error_handler},
         )

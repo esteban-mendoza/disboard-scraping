@@ -4,7 +4,11 @@ starting from the /servers endpoint, and follows pagination and tag links.
 """
 
 from typing import Any, Dict
-from disboard.commons.helpers import extract_disboard_server_items
+from disboard.commons.helpers import (
+    extract_disboard_server_items,
+    request_next_url,
+    request_all_tag_urls,
+)
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 import scrapy
 from scrapy_playwright.page import PageMethod
@@ -12,7 +16,7 @@ from scrapy_playwright.page import PageMethod
 
 class ServersSpider(scrapy.Spider):
     """
-    This spider crawls Disboard starting by the /servers endpoint, 
+    This spider crawls Disboard starting by the /servers endpoint,
     following pagination and tag links.
     """
 
@@ -50,22 +54,8 @@ class ServersSpider(scrapy.Spider):
         Follow the pagination links to request the next page.
         """
         yield from extract_disboard_server_items(response)
-
-        next_url = response.css(".next a::attr(href)").get()
-        if next_url is not None:
-            next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}"
-            yield scrapy.Request(
-                url=next_url,
-                meta={**self.default_request_args, "errback": self.error_handler},
-            )
-
-        tags = response.css(".tag::attr(title)").getall()
-        for tag in tags:
-            tag_url = f"{self.base_url}/servers/tag/{tag}"
-            yield scrapy.Request(
-                url=tag_url,
-                meta={**self.default_request_args, "errback": self.error_handler},
-            )
+        yield from request_next_url(self, response)
+        yield from request_all_tag_urls(self, response)
 
     async def error_handler(self, failure):
         """

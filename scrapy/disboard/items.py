@@ -18,7 +18,7 @@ class DisboardServerItem(scrapy.Item):
         discord_invite_code (str): The Discord invite code of the server.
         server_name (str): The name of the server.
         server_description (str): The description of the server.
-        tags (List[Dict[str, str]]): A list of dictionaries associating each 
+        tags (List[Dict[str, str]]): A list of dictionaries associating each
             data-id (a Disboard's internal key for enumerating tags) to its
             corresponding tag name.
     """
