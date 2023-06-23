@@ -16,6 +16,6 @@ playwright install
 For a minimal local run, use the command below. The flag `-o servers.jsonl` will append the output to a JSON Lines file.
 
 ```bash
-cd disboard
+cd scrapy
 scrapy crawl servers -o servers.jsonl
 ```
