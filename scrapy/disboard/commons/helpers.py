@@ -2,6 +2,7 @@ from disboard.items import DisboardServerItem
 from scrapy.http import Response
 from datetime import datetime
 
+
 def extract_disboard_server_items(response: Response) -> DisboardServerItem:
     """
     Given a response from a Disboard server list page, yields all
