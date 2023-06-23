@@ -3,7 +3,11 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import requests
 from scrapy import signals
+from scrapy.http import HtmlResponse
+from scrapy.exceptions import IgnoreRequest
+from disboard.settings import FLARE_SOLVERR_URL
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -56,10 +60,12 @@ class DisboardSpiderMiddleware:
         spider.logger.info("Spider opened: %s" % spider.name)
 
 
-class DisboardDownloaderMiddleware:
+class FlareSolverrDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
+
+    proxy_url = FLARE_SOLVERR_URL
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -69,16 +75,33 @@ class DisboardDownloaderMiddleware:
         return s
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
+        """
+        This method forwards all requests to the FlareSolverr server,
+        awaits and returns the response from the proxy server.
+        """
 
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
-        return None
+        post_body = {
+            "url": request.url,
+            "cmd": "request.get",
+            "maxTimeout": 60000,
+        }
+
+        response = requests.post(
+            self.proxy_url, headers={"Content-Type": "application/json"}, json=post_body
+        )
+
+        if response.status_code == 200:
+            solution_response = response.json()["solution"]
+            return HtmlResponse(
+                url=solution_response["url"],
+                body=solution_response["response"],
+                headers=response.headers,
+                request=request,
+                protocol=response.raw.version,
+                encoding="utf-8",
+            )
+        else:
+            raise IgnoreRequest(f"Failed to get response from proxy server: {response}")
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.

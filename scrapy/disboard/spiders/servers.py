@@ -30,7 +30,7 @@ class ServersSpider(scrapy.Spider):
 
     @property
     def page_iterator_prefix(self):
-        if self.settings.get("USE_WEB_CACHE", True):
+        if self.settings.get("USE_WEB_CACHE"):
             return WEBCACHE_URL
         else:
             return ""
@@ -54,8 +54,12 @@ class ServersSpider(scrapy.Spider):
         Follow the pagination links to request the next page.
         """
         yield from extract_disboard_server_items(response)
-        yield from request_next_url(self, response)
-        yield from request_all_tag_urls(self, response)
+
+        if self.settings.get("FOLLOW_PAGINATION_LINKS"):
+            yield from request_next_url(self, response)
+
+        if self.settings.get("FOLLOW_TAG_LINKS"):
+            yield from request_all_tag_urls(self, response)
 
     async def error_handler(self, failure):
         """
@@ -63,5 +67,4 @@ class ServersSpider(scrapy.Spider):
         Capture a screenshot and close the page.
         """
         page = failure.request.meta["playwright_page"]
-        await page.screenshot(path=f"screenshot-{page.url}.png")
         await page.close()

@@ -20,7 +20,6 @@ NEWSPIDER_MODULE = "disboard.spiders"
 ROBOTSTXT_OBEY = False
 
 # Playwright settings
-
 DOWNLOAD_HANDLERS = {
     "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
@@ -59,9 +58,9 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    "disboard.middlewares.DisboardDownloaderMiddleware": 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -102,4 +101,7 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 # Custom settings
-USE_WEB_CACHE = True
+USE_WEB_CACHE = False
+FOLLOW_PAGINATION_LINKS = True
+FOLLOW_TAG_LINKS = False
+FLARE_SOLVERR_URL = "http://localhost:8191/v1"
