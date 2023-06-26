@@ -58,9 +58,9 @@ DOWNLOAD_DELAY = 3
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#     "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -101,9 +101,22 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 # Custom settings
-USE_WEB_CACHE = True
+USE_WEB_CACHE = False
 FOLLOW_PAGINATION_LINKS = False
 FOLLOW_TAG_LINKS = False
 FOLLOW_CATEGORY_LINKS = False
 FILTER_BY_LANGUAGE = True
 FLARE_SOLVERR_URL = "http://localhost:8191/v1"
+
+# Database settings
+import os
+from dotenv import load_dotenv
+
+load_dotenv("../.env")
+
+DB_PROTOCOL = os.getenv("DB_PROTOCOL")
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOSTSPEC = os.getenv("DB_HOSTSPEC")
+DB_DBNAME = os.getenv("DB_DBNAME")
+DB_URI = f"{DB_PROTOCOL}://{DB_USER}:{DB_PASSWORD}@{DB_HOSTSPEC}/{DB_DBNAME}"
