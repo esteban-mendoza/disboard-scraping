@@ -1,6 +1,7 @@
 from disboard.items import DisboardServerItem
 from scrapy.http import Response, Request
 from datetime import datetime
+from typing import Generator
 
 
 def extract_disboard_server_items(response: Response) -> DisboardServerItem:
@@ -45,9 +46,10 @@ def extract_disboard_server_items(response: Response) -> DisboardServerItem:
         )
 
 
-def request_next_url(self, response: Response) -> Request:
+def request_next_url(self, response: Response) -> Generator[Request, None, None]:
     """
-    Given a response from a Disboard server list page, requests the next page.
+    Given a response from a Disboard server list page, yields a request
+    for the next page.
 
     This function is meant to be used in a scrapy.Spider.parse method.
     """
@@ -60,9 +62,10 @@ def request_next_url(self, response: Response) -> Request:
         )
 
 
-def request_all_tag_urls(self, response: Response) -> Request:
+def request_all_tag_urls(self, response: Response) -> Generator[Request, None, None]:
     """
-    Given a response from a Disboard server list page, requests all tag pages.
+    Given a response from a Disboard server list page, returns a generator
+    with all the requests for tag pages.
 
     This function is meant to be used in a scrapy.Spider.parse method.
     """
@@ -71,5 +74,43 @@ def request_all_tag_urls(self, response: Response) -> Request:
         tag_url = f"{self.base_url}/servers/tag/{tag}"
         yield Request(
             url=tag_url,
+            meta={**self.default_request_args, "errback": self.error_handler},
+        )
+
+
+def request_all_category_urls(
+    self, response: Response
+) -> Generator[Request, None, None]:
+    """
+    Given a response from a Disboard server list page, returns a generator
+    with all the requests for category pages.
+
+    This function is meant to be used in a scrapy.Spider.parse method.
+    """
+    categories = response.css(".category::attr(href)").getall()
+    for category in categories:
+        category_url = f"{self.page_iterator_prefix}{response.urljoin(category)}"
+        yield Request(
+            url=category_url,
+            meta={**self.default_request_args, "errback": self.error_handler},
+        )
+
+
+def request_all_filter_by_language(
+    self, response: Response
+) -> Generator[Request, None, None]:
+    """
+    Given a response from a Disboard server list page, returns a generator
+    with all the requests for filtering by language.
+
+    This function is meant to be used in a scrapy.Spider.parse method.
+    """
+    languages = response.css(
+        "#dropdown-menu-filter-language a.dropdown-item::attr(href)"
+    ).getall()
+    for language in languages:
+        language_url = f"{self.page_iterator_prefix}{response.urljoin(language)}"
+        yield Request(
+            url=language_url,
             meta={**self.default_request_args, "errback": self.error_handler},
         )

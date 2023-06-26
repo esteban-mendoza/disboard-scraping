@@ -8,6 +8,8 @@ from disboard.commons.helpers import (
     extract_disboard_server_items,
     request_next_url,
     request_all_tag_urls,
+    request_all_category_urls,
+    request_all_filter_by_language,
 )
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 import scrapy
@@ -60,6 +62,12 @@ class ServersSpider(scrapy.Spider):
 
         if self.settings.get("FOLLOW_TAG_LINKS"):
             yield from request_all_tag_urls(self, response)
+
+        if self.settings.get("FOLLOW_CATEGORY_LINKS"):
+            yield from request_all_category_urls(self, response)
+
+        if self.settings.get("FILTER_BY_LANGUAGE"):
+            yield from request_all_filter_by_language(self, response)
 
     async def error_handler(self, failure):
         """

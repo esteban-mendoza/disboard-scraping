@@ -33,7 +33,7 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -58,9 +58,9 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-DOWNLOADER_MIDDLEWARES = {
-    "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
-}
+# DOWNLOADER_MIDDLEWARES = {
+#     "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
+# }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -101,7 +101,9 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 # Custom settings
-USE_WEB_CACHE = False
-FOLLOW_PAGINATION_LINKS = True
+USE_WEB_CACHE = True
+FOLLOW_PAGINATION_LINKS = False
 FOLLOW_TAG_LINKS = False
+FOLLOW_CATEGORY_LINKS = False
+FILTER_BY_LANGUAGE = True
 FLARE_SOLVERR_URL = "http://localhost:8191/v1"

@@ -14,7 +14,7 @@ playwright install
 ## Usage
 
 In its current state, the project uses the [FlareSolverr proxy server](https://github.com/FlareSolverr/FlareSolverr)
-to bypass Cloudflare's anti-bot protection and be able to connect to [Disboard.org](https://disboard.org). To use it, 
+to bypass Cloudflare's anti-bot protection and be able to connect to [Disboard.org](https://disboard.org). To use it,
 run the following command in a separate terminal:
 
 ```bash
@@ -37,7 +37,9 @@ scrapy crawl servers -o servers.jsonl
 
 The `scrapy/disboard/settings.py` file contains the settings for the project. The following custom settings have been added:
 
-- `USE_WEB_CACHE`: If set to `True`, the project will use the [Web Cache](https://webcache.googleusercontent.com/) to scrape the website. This is useful if you want to scrape the website without using a proxy server.
-- `FOLLOW_PAGINATION_LINKS`: If set to `True`, the project will follow the pagination links on a given server listing.
-- `FOLLOW_TAG_LINKS`: If set to `True`, the project will follow the tag links on a given server listing. Be aware that this will **hugely** increase the number of requests made to the website.
+- `USE_WEB_CACHE`: If set to `True`, the spiders will use [Google's Web Cache](https://webcache.googleusercontent.com/) to scrape the website. This is useful if you want to scrape the website without using a proxy server.
+- `FOLLOW_PAGINATION_LINKS`: If set to `True`, the spiders will follow the pagination links on a given server listing.
+- `FOLLOW_TAG_LINKS`: If set to `True`, the spiders will follow the tag links on a given server listing. Be aware that this will **hugely** increase the amount of scheduled requests.
+- `FOLLOW_CATEGORY_LINKS`: If set to `True`, the spiders will follow the category links on a given server listing.
+- `FILTER_BY_LANGUAGE`: If set to `True`, the spiders will request the server listing for each language and filter the results by the language of the server.
 - `FLARE_SOLVERR_URL`: The URL of the FlareSolverr proxy server. By default, it is set to `http://localhost:8191/v1`.
