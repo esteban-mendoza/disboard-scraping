@@ -15,7 +15,6 @@ class DisboardServerItem(scrapy.Item):
         scrape_time (float): Timestamp of the response when the item was scraped.
         platform_link (str): The URL of the server on Disboard.
         guild_id (str): The Discord guild ID of the server.
-        discord_invite_code (str): The Discord invite code of the server.
         server_name (str): The name of the server.
         server_description (str): The description of the server.
         tags (List[Dict[str, str]]): A list of dictionaries associating each
@@ -26,7 +25,6 @@ class DisboardServerItem(scrapy.Item):
     scrape_time: float = scrapy.Field()
     platform_link: str = scrapy.Field()
     guild_id: str = scrapy.Field()
-    discord_invite_code: str = scrapy.Field()
     server_name: str = scrapy.Field()
     server_description: str = scrapy.Field()
     tags: List[Dict[str, str]] = scrapy.Field()

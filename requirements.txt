@@ -1,3 +1,5 @@
+psycopg[binary]
+python-dotenv
 requests
 scrapy
 scrapy-playwright
