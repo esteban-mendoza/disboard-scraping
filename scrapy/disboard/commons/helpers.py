@@ -89,7 +89,7 @@ def request_all_category_urls(
     """
     categories = response.css(".category::attr(href)").getall()
     for category in categories:
-        category_url = f"{self.page_iterator_prefix}{response.urljoin(category)}"
+        category_url = f"{self.base_url}/servers/category/{category}"
         yield Request(
             url=category_url,
             meta={**self.default_request_args, "errback": self.error_handler},
