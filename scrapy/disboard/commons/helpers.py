@@ -1,6 +1,6 @@
 from disboard.items import DisboardServerItem
-from scrapy.http import Response, Request
 from datetime import datetime
+from scrapy.http import Response, Request
 from typing import Generator
 
 

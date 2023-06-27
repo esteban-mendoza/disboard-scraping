@@ -3,11 +3,9 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-import json
 import psycopg
+from itemadapter import ItemAdapter
+from psycopg.types.json import Jsonb
 
 
 class DisboardPipeline:
@@ -16,19 +14,31 @@ class DisboardPipeline:
 
 
 class PostgresPipeline:
-    table_name = "disboard_servers"
+    table_name = "public.disboard_servers"
 
-    def __init__(self, db_uri):
-        self.db_uri = db_uri
+    def __init__(self, db_host, db_port, db_name, db_user, db_password):
+        self.db_host = db_host
+        self.db_port = db_port
+        self.db_name = db_name
+        self.db_user = db_user
+        self.db_password = db_password
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            mongo_uri=crawler.settings.get("DB_URI"),
+            db_host=crawler.settings.get("DB_HOST"),
+            db_port=crawler.settings.get("DB_PORT"),
+            db_name=crawler.settings.get("DB_NAME"),
+            db_user=crawler.settings.get("DB_USER"),
+            db_password=crawler.settings.get("DB_PASSWORD"),
         )
 
     def open_spider(self, spider):
-        self.client = psycopg.connect(self.db_uri)
+        connection_string = f"""
+            host={self.db_host} port={self.db_port} dbname={self.db_name} 
+            user={self.db_user} password={self.db_password}
+        """
+        self.client = psycopg.connect(connection_string)
         self.cursor = self.client.cursor()
 
     def close_spider(self, spider):
@@ -37,18 +47,24 @@ class PostgresPipeline:
         self.client.close()
 
     def process_item(self, item, spider):
-        sql = (
-            f"INSERT INTO {self.table_name} (scrape_time, platform_link, guild_id, discord_invite_code, server_name, server_description, tags, category) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        sql = f"""INSERT INTO {self.table_name}
+            (scrape_time, platform_link, guild_id, server_name, server_description, tags, category) \
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (guild_id)
+            DO UPDATE SET
+                scrape_time = EXCLUDED.scrape_time,
+                server_name = EXCLUDED.server_name,
+                server_description = EXCLUDED.server_description,
+                tags = EXCLUDED.tags,
+                category = EXCLUDED.category"""
+        data = (
+            item["scrape_time"],
+            item["platform_link"],
+            item["guild_id"],
+            item["server_name"],
+            item["server_description"],
+            Jsonb(item["tags"]),
+            item["category"],
         )
-        data = {
-            "scrape_time": item["scrape_time"],
-            "platform_link": item["platform_link"],
-            "guild_id": item["guild_id"],
-            "discord_invite_code": item["discord_invite_code"],
-            "server_name": item["server_name"],
-            "server_description": item["server_description"],
-            "tags": json.dumps(item["tags"]),
-            "category": item["category"],
-        }
         self.cursor.execute(sql, data)
         return item

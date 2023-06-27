@@ -50,3 +50,18 @@ The `scrapy/disboard/settings.py` file contains the settings for the project. Th
 - `FOLLOW_TAG_LINKS`: If set to `True`, the spiders will follow the tag links on a given server listing. Be aware that this will **hugely** increase the amount of scheduled requests.
 - `FOLLOW_CATEGORY_LINKS`: If set to `True`, the spiders will follow the category links on a given server listing.
 - `FILTER_BY_LANGUAGE`: If set to `True`, the spiders will request the server listing for each language and filter the results by the language of the server.
+
+## Database connection
+
+The project can be configured to store the scraped data in a database.
+It currently supports a connection to a Postgres database. In order to use it,
+make sure that the `settings.py` file contains the following lines:
+
+```python
+ITEM_PIPELINES = {
+    "disboard.pipelines.PostgresPipeline": 300,
+}
+```
+
+The database connection settings are stored in the `scrapy/disboard/settings.py` file
+under the `## Database connection` section.
