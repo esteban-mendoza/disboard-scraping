@@ -4,7 +4,6 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 import psycopg
-from itemadapter import ItemAdapter
 from psycopg.types.json import Jsonb
 
 
@@ -39,10 +38,10 @@ class PostgresPipeline:
             user={self.db_user} password={self.db_password}
         """
         self.client = psycopg.connect(connection_string)
+        self.client.autocommit = True
         self.cursor = self.client.cursor()
 
     def close_spider(self, spider):
-        self.client.commit()
         self.cursor.close()
         self.client.close()
 
