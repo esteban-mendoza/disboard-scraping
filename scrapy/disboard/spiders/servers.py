@@ -25,9 +25,6 @@ class ServersSpider(scrapy.Spider):
     name: str = "servers"
     default_request_args: Dict[str, Any] = {
         "playwright": True,
-        "playwright_page_methods": [
-            PageMethod("wait_for_selector", ".server-name a"),
-        ],
     }
 
     @property
@@ -45,7 +42,7 @@ class ServersSpider(scrapy.Spider):
         """
         Generate the initial request to the /servers endpoint.
         """
-        url = f"{self.base_url}/servers/2"
+        url = f"{self.base_url}/servers/3"
         yield scrapy.Request(
             url=url, meta={**self.default_request_args, "errback": self.error_handler}
         )
