@@ -110,14 +110,6 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-# Custom settings
-USE_WEB_CACHE = True
-FOLLOW_PAGINATION_LINKS = True
-FOLLOW_TAG_LINKS = True
-FOLLOW_CATEGORY_LINKS = True
-FILTER_BY_LANGUAGE = True
-FLARE_SOLVERR_URL = "http://localhost:8191/v1"
-
 # Logging settings
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # File name to use for logging output. If None, standard error will be used.
@@ -129,6 +121,13 @@ LOG_ENCODING = "utf-8"
 # If LOG_STDOUT = True, all standard output (and error) of the process will be redirected to the log.
 LOG_STDOUT = True
 
+# Custom settings
+USE_WEB_CACHE = True
+FOLLOW_PAGINATION_LINKS = True
+FOLLOW_TAG_LINKS = True
+FOLLOW_CATEGORY_LINKS = True
+FILTER_BY_LANGUAGE = True
+FLARE_SOLVERR_URL = "http://localhost:8191/v1"
 
 # Database settings
 import os
