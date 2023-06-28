@@ -33,7 +33,7 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 20
+DOWNLOAD_DELAY = 18
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -79,7 +79,7 @@ ITEM_PIPELINES = {
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 20
+AUTOTHROTTLE_START_DELAY = 18
 # The maximum download delay to be set in case of high latencies
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
@@ -121,15 +121,22 @@ LOG_ENCODING = "utf-8"
 # If LOG_STDOUT = True, all standard output (and error) of the process will be redirected to the log.
 LOG_STDOUT = True
 
+# # Configure breadth-first crawling
+# # See https://docs.scrapy.org/en/latest/faq.html#does-scrapy-crawl-in-breadth-first-or-depth-first-order
+DEPTH_PRIORITY = 1
+SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
+SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
+
 # Custom settings
-USE_WEB_CACHE = True
+USE_WEB_CACHE = False
 FOLLOW_PAGINATION_LINKS = True
 FOLLOW_TAG_LINKS = True
-FOLLOW_CATEGORY_LINKS = True
-FILTER_BY_LANGUAGE = True
+FOLLOW_CATEGORY_LINKS = False
+FILTER_BY_LANGUAGE = False
 FLARE_SOLVERR_URL = "http://localhost:8191/v1"
 
 # Database settings
+# The database settings are stored in a .env local file in the project directory
 import os
 from dotenv import load_dotenv, find_dotenv
 

@@ -8,6 +8,7 @@ from scrapy import signals
 from scrapy.http import HtmlResponse
 from scrapy.exceptions import IgnoreRequest
 from disboard.settings import FLARE_SOLVERR_URL
+from logging import getLogger, INFO
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -64,7 +65,7 @@ class FlareSolverrDownloaderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
-
+    logger = getLogger(__name__)
     proxy_url = FLARE_SOLVERR_URL
 
     @classmethod
@@ -92,7 +93,7 @@ class FlareSolverrDownloaderMiddleware:
 
         if response.status_code == 200:
             solution_response = response.json()["solution"]
-            return HtmlResponse(
+            html_response = HtmlResponse(
                 url=solution_response["url"],
                 body=solution_response["response"],
                 headers=response.headers,
@@ -100,6 +101,11 @@ class FlareSolverrDownloaderMiddleware:
                 protocol=response.raw.version,
                 encoding="utf-8",
             )
+            self.logger.log(
+                INFO,
+                f"Successfully got response from proxy server: <{html_response.status} {html_response.url}>",
+            )
+            return html_response
         else:
             raise IgnoreRequest(f"Failed to get response from proxy server: {response}")
 

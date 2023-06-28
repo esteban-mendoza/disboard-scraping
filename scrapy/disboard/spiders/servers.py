@@ -42,7 +42,7 @@ class ServersSpider(scrapy.Spider):
         """
         Generate the initial request to the /servers endpoint.
         """
-        url = f"{self.base_url}/servers/5"
+        url = f"{self.base_url}/servers"
         yield scrapy.Request(
             url=url, meta={**self.default_request_args, "errback": self.error_handler}
         )

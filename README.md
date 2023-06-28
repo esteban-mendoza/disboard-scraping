@@ -14,8 +14,9 @@ playwright install
 ## Usage
 
 In its current state, the project uses the [FlareSolverr proxy server](https://github.com/FlareSolverr/FlareSolverr)
-to bypass Cloudflare's anti-bot protection and be able to connect to [Disboard.org](https://disboard.org). To use it,
-run the following command in a separate terminal:
+to bypass Cloudflare's anti-bot protection and be able to connect to [
+Disboard.org](https://disboard.org). To use it, run the following command
+in a separate terminal:
 
 ```bash
 docker run -d \
@@ -26,18 +27,30 @@ docker run -d \
   ghcr.io/flaresolverr/flaresolverr:latest
 ```
 
-For a minimal local run, use the command below. The flag `-o servers.jsonl` will append the output to a JSON Lines file.
+The spiders connect to a Postgres database to store the scraped data.
+The database connection settings are stored in the `scrapy/disboard/settings.py`
+file under the `## Database connection` section.
+
+For a minimal local run, use the command below.
 
 ```bash
 cd scrapy
-scrapy crawl servers -o servers.jsonl
+scrapy crawl servers -s JOBDIR=crawls/servers-1
 ```
+
+The flag `-o servers.jsonl` will append the output to a JSON Lines file.
+The flag `-s JOBDIR=crawls/servers-1` will save the state of the spider
+in the `crawls/servers-1` directory, which will allow you to pause and
+resume the spider.
 
 ## Configuration
 
-The `scrapy/disboard/settings.py` file contains the settings for the project. The following custom settings have been added:
+The `scrapy/disboard/settings.py` file contains the settings for the project.
+The following custom settings have been added:
 
-- `FLARE_SOLVERR_URL`: The URL of the FlareSolverr proxy server. By default, it is set to `http://localhost:8191/v1`. In order for the FlareSolverr to be used, the following lines must be uncommented in `settings.py`:
+- `FLARE_SOLVERR_URL`: The URL of the FlareSolverr proxy server. By default,
+- it is set to `http://localhost:8191/v1`. In order for the FlareSolverr to be
+- used, the following lines must be uncommented in `settings.py`:
 
   ```python
   DOWNLOADER_MIDDLEWARES = {
@@ -45,11 +58,20 @@ The `scrapy/disboard/settings.py` file contains the settings for the project. Th
   }
   ```
 
-- `USE_WEB_CACHE`: If set to `True`, the spiders will use [Google's Web Cache](https://webcache.googleusercontent.com/) to scrape the website. This is useful if you want to scrape the website without using a proxy server. Note that if you are using Google's Web Cache, you should probably disable the `FlareSolverrDownloaderMiddleware` in `settings.py`.
-- `FOLLOW_PAGINATION_LINKS`: If set to `True`, the spiders will follow the pagination links on a given server listing.
-- `FOLLOW_TAG_LINKS`: If set to `True`, the spiders will follow the tag links on a given server listing. Be aware that this will **hugely** increase the amount of scheduled requests.
-- `FOLLOW_CATEGORY_LINKS`: If set to `True`, the spiders will follow the category links on a given server listing.
-- `FILTER_BY_LANGUAGE`: If set to `True`, the spiders will request the server listing for each language and filter the results by the language of the server.
+- `USE_WEB_CACHE`: If set to `True`, the spiders will use [Google's Web Cache](https://webcache.googleusercontent.com/)
+  to scrape the website. This is useful if you want to scrape the website
+  without using a proxy server. Note that if you are using Google's Web Cache,
+  you should probably disable the `FlareSolverrDownloaderMiddleware`
+  in `settings.py`.
+- `FOLLOW_PAGINATION_LINKS`: If set to `True`, the spiders will follow
+  the pagination links on a given server listing.
+- `FOLLOW_TAG_LINKS`: If set to `True`, the spiders will follow the tag
+  links on a given server listing. Be aware that this will **hugely** increase
+  the amount of scheduled requests.
+- `FOLLOW_CATEGORY_LINKS`: If set to `True`, the spiders will follow the
+  category links on a given server listing.
+- `FILTER_BY_LANGUAGE`: If set to `True`, the spiders will request the server
+  listing for each language and filter the results by the language of the server.
 
 ## Database connection
 
@@ -63,5 +85,5 @@ ITEM_PIPELINES = {
 }
 ```
 
-The database connection settings are stored in the `scrapy/disboard/settings.py` file
-under the `## Database connection` section.
+The database connection settings are stored in the `scrapy/disboard/settings.py`
+file under the `## Database connection` section.
