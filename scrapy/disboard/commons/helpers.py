@@ -67,7 +67,8 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
     This function is meant to be used in a scrapy.Spider.parse method.
     """
     tags = response.css(".tag::attr(title)").getall()
-    for tag in tags:
+    unique_tags_list = list(set(tags))
+    for tag in unique_tags_list:
         tag_url = f"{self.base_url}/servers/tag/{tag}"
         yield Request(url=tag_url)
 
@@ -83,7 +84,7 @@ def request_all_category_urls(
     """
     categories = response.css(".category::attr(href)").getall()
     for category in categories:
-        category_url = f"{self.base_url}/servers/category/{category}"
+        category_url = f"{self.base_url}{response.urljoin(category)}"
         yield Request(url=category_url)
 
 
