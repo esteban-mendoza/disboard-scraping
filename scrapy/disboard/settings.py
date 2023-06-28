@@ -19,21 +19,13 @@ NEWSPIDER_MODULE = "disboard.spiders"
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-# Playwright settings
-DOWNLOAD_HANDLERS = {
-    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-}
-
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 # CONCURRENT_REQUESTS = 2
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 18
+DOWNLOAD_DELAY = 40
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -121,28 +113,46 @@ LOG_ENCODING = "utf-8"
 # If LOG_STDOUT = True, all standard output (and error) of the process will be redirected to the log.
 LOG_STDOUT = True
 
-# # Configure breadth-first crawling
-# # See https://docs.scrapy.org/en/latest/faq.html#does-scrapy-crawl-in-breadth-first-or-depth-first-order
-DEPTH_PRIORITY = 1
-SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
-SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
+# Configure breadth-first crawling
+# See https://docs.scrapy.org/en/latest/faq.html#does-scrapy-crawl-in-breadth-first-or-depth-first-order
+# DEPTH_PRIORITY = 1
+# SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
+# SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
 
 # Custom settings
 USE_WEB_CACHE = False
 FOLLOW_PAGINATION_LINKS = True
-FOLLOW_TAG_LINKS = True
+FOLLOW_TAG_LINKS = False
 FOLLOW_CATEGORY_LINKS = False
 FILTER_BY_LANGUAGE = False
 FLARE_SOLVERR_URL = "http://localhost:8191/v1"
+
+# Scrapy-Redis settings
+# Enables scheduling storing requests queue in redis
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+# Ensure all spiders share same duplicates filter through redis
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+# Scheduler queue class:
+# - Use LifoQueue to process requests in Depth-first order
+# - Use FifoQueue to process requests in Breadth-first order
+SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.LifoQueue"
+# Don't cleanup Redis queues. Allows to pause/resume crawls.
+SCHEDULER_PERSIST = True
 
 # Database settings
 # The database settings are stored in a .env local file in the project directory
 import os
 from dotenv import load_dotenv, find_dotenv
 
-dotenv_path = find_dotenv()
-load_dotenv(dotenv_path)
+# Load environment variables from .env file
+load_dotenv(find_dotenv())
 
+# Redis database environment variables
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+
+# Postgres environment variables
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")

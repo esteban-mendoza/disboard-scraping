@@ -56,10 +56,7 @@ def request_next_url(self, response: Response) -> Generator[Request, None, None]
     next_url = response.css(".next a::attr(href)").get()
     if next_url is not None:
         next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}"
-        yield Request(
-            url=next_url,
-            meta={**self.default_request_args, "errback": self.error_handler},
-        )
+        yield Request(url=next_url)
 
 
 def request_all_tag_urls(self, response: Response) -> Generator[Request, None, None]:
@@ -72,10 +69,7 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
     tags = response.css(".tag::attr(title)").getall()
     for tag in tags:
         tag_url = f"{self.base_url}/servers/tag/{tag}"
-        yield Request(
-            url=tag_url,
-            meta={**self.default_request_args, "errback": self.error_handler},
-        )
+        yield Request(url=tag_url)
 
 
 def request_all_category_urls(
@@ -90,10 +84,7 @@ def request_all_category_urls(
     categories = response.css(".category::attr(href)").getall()
     for category in categories:
         category_url = f"{self.base_url}/servers/category/{category}"
-        yield Request(
-            url=category_url,
-            meta={**self.default_request_args, "errback": self.error_handler},
-        )
+        yield Request(url=category_url)
 
 
 def request_all_filter_by_language(
@@ -110,7 +101,4 @@ def request_all_filter_by_language(
     ).getall()
     for language in languages:
         language_url = f"{self.page_iterator_prefix}{response.urljoin(language)}"
-        yield Request(
-            url=language_url,
-            meta={**self.default_request_args, "errback": self.error_handler},
-        )
+        yield Request(url=language_url)

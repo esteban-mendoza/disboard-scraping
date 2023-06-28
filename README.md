@@ -8,7 +8,6 @@ The current version of the project is tested with Python 3.8.12.
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-playwright install
 ```
 
 ## Usage
@@ -35,13 +34,10 @@ For a minimal local run, use the command below.
 
 ```bash
 cd scrapy
-scrapy crawl servers -s JOBDIR=crawls/servers-1
+scrapy crawl servers
 ```
 
 The flag `-o servers.jsonl` will append the output to a JSON Lines file.
-The flag `-s JOBDIR=crawls/servers-1` will save the state of the spider
-in the `crawls/servers-1` directory, which will allow you to pause and
-resume the spider.
 
 ## Configuration
 
