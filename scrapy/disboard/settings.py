@@ -33,7 +33,7 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 10
+DOWNLOAD_DELAY = 20
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -79,7 +79,7 @@ ITEM_PIPELINES = {
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 18
+AUTOTHROTTLE_START_DELAY = 20
 # The maximum download delay to be set in case of high latencies
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
@@ -117,6 +117,18 @@ FOLLOW_TAG_LINKS = True
 FOLLOW_CATEGORY_LINKS = True
 FILTER_BY_LANGUAGE = True
 FLARE_SOLVERR_URL = "http://localhost:8191/v1"
+
+# Logging settings
+# See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
+# File name to use for logging output. If None, standard error will be used.
+LOG_FILE = "disboard.log"
+# If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
+LOG_FILE_APPEND = True
+# The encoding to be used for logging
+LOG_ENCODING = "utf-8"
+# If LOG_STDOUT = True, all standard output (and error) of the process will be redirected to the log.
+LOG_STDOUT = True
+
 
 # Database settings
 import os
