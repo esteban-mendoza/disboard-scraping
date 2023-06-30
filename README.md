@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 In its current state, the project uses the [FlareSolverr proxy server](https://github.com/FlareSolverr/FlareSolverr)
 to bypass Cloudflare's anti-bot protection and be able to connect to [
-Disboard.org](https://disboard.org). To use it locally, run the following 
+Disboard.org](https://disboard.org). To use it locally, run the following
 command in a separate terminal:
 
 ```bash
@@ -53,6 +53,21 @@ The following custom settings have been added:
 - `START_FROM_BEGINNING`: If set to `True`, the spiders will delete the
   Redis keys and start scraping from the beginning. If set to `False`, the
   spiders will continue scraping from where they left off.
+
+  **Note:** This setting is still in development. In order to start scraping
+  from the beginning, you will have to manually delete the Redis keys and
+  push the starting URLs to the Redis queue.
+
+  To delete the Redis keys, connect to the Redis server with
+  `redis-cli` and run the following:
+
+  ```bash
+  redis-cli
+  del servers:dupefilter
+  del servers:requests
+  lpush servers:requests https://disboard.org/servers
+  ```
+
 - `FILTER_BY_LANGUAGE`: If True, the crawler will append `SELECTED_LANGUAGE`
   language code to all URLs. This is useful if you want to scrape the website
   for a specific language.

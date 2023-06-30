@@ -76,7 +76,7 @@ AUTOTHROTTLE_START_DELAY = 6
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1.1
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1.2
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
@@ -105,7 +105,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 # Logging settings
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # File name to use for logging output. If None, standard error will be used.
-LOG_FILE = "disboard.log"
+LOG_FILE = "disboard-2023-06-30.log"
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
 LOG_FILE_APPEND = True
 # The encoding to be used for logging
@@ -129,7 +129,7 @@ load_dotenv(find_dotenv())
 
 # If True, the crawler will delete all data from dupefilter and scheduler
 # and start from the start_url
-START_FROM_BEGINNING = False
+START_FROM_BEGINNING = True
 # If True, the crawler will use Google's web cache to get the HTML of the page
 USE_WEB_CACHE = False
 # If True, the crawler will follow pagination links
@@ -143,7 +143,7 @@ FILTER_BY_LANGUAGE = False
 # The language to filter all requests
 SELECTED_LANGUAGE = "zh-CN"
 # URL of the FlareSolverr proxy server
-FLARE_SOLVERR_URL = os.getenv("FLARE_SOLVERR_URL")
+FLARE_SOLVERR_URL = "http://localhost:8191/v1"
 
 # Scrapy-Redis settings
 # See https://github.com/rmax/scrapy-redis/wiki/Usage
@@ -154,7 +154,7 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 # Scheduler queue class:
 # - Use LifoQueue to process requests in Depth-first order
 # - Use FifoQueue to process requests in Breadth-first order
-SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.FifoQueue"
+SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.LifoQueue"
 # Don't cleanup Redis queues. Allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 

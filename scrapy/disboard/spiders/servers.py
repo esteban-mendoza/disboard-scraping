@@ -3,8 +3,6 @@ This module contains a Scrapy spider that crawls the Disboard website
 starting from the /servers endpoint.
 """
 
-import redis
-
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 from disboard.commons.helpers import (
     extract_disboard_server_items,
@@ -43,30 +41,6 @@ class ServersSpider(RedisSpider):
     @property
     def base_url(self):
         return f"{self.page_iterator_prefix}{DISBOARD_URL}"
-
-    def start_requests(self):
-        """
-        If the START_FROM_BEGINNING flag is True, delete all the associated
-        keys in Redis and pushes the start URL of the /servers endpoint to
-        the Redis `redis_key` queue.
-
-        If the flag is False, the spider will start from the last URL in the
-        Redis queue of requests.
-        """
-        if self.settings.get("START_FROM_BEGINNING"):
-            # Create a Redis connection
-            r = redis.Redis(self.settings.get("REDIS_URL"))
-
-            # Delete all 'servers' keys
-            for key in r.scan_iter(f"{self.name}:*"):
-                r.delete(key)
-
-            # Push the /servers URL to the queue
-            start_url = f"{self.base_url}/servers{self.language_postfix}"
-            r.lpush(self.redis_key, start_url)
-
-            # Close the connection
-            r.close()
 
     def parse(self, response):
         """
