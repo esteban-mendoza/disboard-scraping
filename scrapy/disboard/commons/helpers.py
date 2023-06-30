@@ -86,20 +86,3 @@ def request_all_category_urls(
     for category in categories:
         category_url = f"{self.base_url}{response.urljoin(category)}"
         yield Request(url=category_url)
-
-
-def request_all_filter_by_language(
-    self, response: Response
-) -> Generator[Request, None, None]:
-    """
-    Given a response from a Disboard server list page, returns a generator
-    with all the requests for filtering by language.
-
-    This function is meant to be used in a scrapy.Spider.parse method.
-    """
-    languages = response.css(
-        "#dropdown-menu-filter-language a.dropdown-item::attr(href)"
-    ).getall()
-    for language in languages:
-        language_url = f"{self.page_iterator_prefix}{response.urljoin(language)}"
-        yield Request(url=language_url)

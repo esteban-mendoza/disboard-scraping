@@ -1,7 +1,9 @@
 """
 This module contains a Scrapy spider that crawls the Disboard website
-starting from the /servers endpoint, and follows pagination and tag links.
+starting from the /servers endpoint.
 """
+
+import redis
 
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 from disboard.commons.helpers import (
@@ -9,7 +11,6 @@ from disboard.commons.helpers import (
     request_next_url,
     request_all_tag_urls,
     request_all_category_urls,
-    request_all_filter_by_language,
 )
 from scrapy_redis.spiders import RedisSpider
 
@@ -33,8 +34,30 @@ class ServersSpider(RedisSpider):
             return ""
 
     @property
+    def language_postfix(self):
+        if self.settings.get("FILTER_BY_LANGUAGE"):
+            return f"?fl={self.settings.get('SELECTED_LANGUAGE')}"
+        else:
+            return ""
+
+    @property
     def base_url(self):
-        return f"{self.page_iterator_prefix}{DISBOARD_URL}"
+        return f"{self.page_iterator_prefix}{DISBOARD_URL}{self.language_postfix}"
+
+    def start_requests(self):
+        """
+        If the START_FROM_BEGINNING flag is set, delete all the associated
+        keys in Redis and pushes the start URL to the queue.
+        """
+        if self.settings.get("START_FROM_BEGINNING"):
+            r = redis.Redis(self.settings.get("REDIS_URL"))
+
+            # Delete all 'servers' keys
+            for key in r.scan_iter(f"{self.name}:*"):
+                r.delete(key)
+
+            # Push the start URL to the queue
+            r.lpush(f"{self.name}:start_urls", self.base_url)
 
     def parse(self, response):
         """
@@ -51,6 +74,3 @@ class ServersSpider(RedisSpider):
 
         if self.settings.get("FOLLOW_CATEGORY_LINKS"):
             yield from request_all_category_urls(self, response)
-
-        if self.settings.get("FILTER_BY_LANGUAGE"):
-            yield from request_all_filter_by_language(self, response)

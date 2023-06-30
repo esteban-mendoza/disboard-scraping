@@ -76,7 +76,7 @@ AUTOTHROTTLE_START_DELAY = 6
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1.1
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
@@ -126,6 +126,62 @@ FOLLOW_TAG_LINKS = True
 FOLLOW_CATEGORY_LINKS = True
 FILTER_BY_LANGUAGE = False
 FLARE_SOLVERR_URL = "http://localhost:8191/v1"
+
+# Startup settings
+# If True, the crawler will delete all data from dupefilter and scheduler
+# and start from the beginning
+START_FROM_BEGINNING = False
+# A list of the 46 languages supported by Disboard
+AVAILABLE_LANGUAGES = [
+    "Unspecified",
+    "af",
+    "id",
+    "ms",
+    "ca",
+    "cs",
+    "da",
+    "de",
+    "et",
+    "en",
+    "en-GB",
+    "es",
+    "es-419",
+    "fil",
+    "fr",
+    "hr",
+    "zu",
+    "it",
+    "lv",
+    "lt",
+    "hu",
+    "nl",
+    "no",
+    "pl",
+    "pt-BR",
+    "pt-PT",
+    "ro",
+    "sk",
+    "sl",
+    "fi",
+    "sv",
+    "vi",
+    "tr",
+    "zh-TW",
+    "zh-CN",
+    "ja",
+    "el",
+    "bg",
+    "ru",
+    "sr",
+    "uk",
+    "he",
+    "ar",
+    "hi",
+    "th",
+    "ko",
+]
+# The language to filter all requests
+SELECTED_LANGUAGE = AVAILABLE_LANGUAGES[0]
 
 # Scrapy-Redis settings
 # Enables scheduling storing requests queue in redis
