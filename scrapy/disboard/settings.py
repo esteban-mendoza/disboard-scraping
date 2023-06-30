@@ -120,72 +120,33 @@ LOG_STDOUT = True
 # SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
 
 # Custom settings
-USE_WEB_CACHE = False
-FOLLOW_PAGINATION_LINKS = True
-FOLLOW_CATEGORY_LINKS = True
-FOLLOW_TAG_LINKS = True
-FILTER_BY_LANGUAGE = False
-FLARE_SOLVERR_URL = "http://localhost:8191/v1"
+# Sensible settings are stored in a .env local file in the project directory
+import os
+from dotenv import load_dotenv, find_dotenv
 
-# Startup settings
+# Load environment variables from .env file
+load_dotenv(find_dotenv())
+
 # If True, the crawler will delete all data from dupefilter and scheduler
 # and start from the start_url
 START_FROM_BEGINNING = False
+# If True, the crawler will use Google's web cache to get the HTML of the page
+USE_WEB_CACHE = False
+# If True, the crawler will follow pagination links
+FOLLOW_PAGINATION_LINKS = True
+# If True, the crawler will follow category links
+FOLLOW_CATEGORY_LINKS = True
+# If True, the crawler will follow tag links
+FOLLOW_TAG_LINKS = True
 # If True, the crawler will append SELECTED_LANGUAGE language code to all URLs
 FILTER_BY_LANGUAGE = False
-# A list of the 46 languages supported by Disboard
-AVAILABLE_LANGUAGES = [
-    "Unspecified",
-    "af",
-    "id",
-    "ms",
-    "ca",
-    "cs",
-    "da",
-    "de",
-    "et",
-    "en",
-    "en-GB",
-    "es",
-    "es-419",
-    "fil",
-    "fr",
-    "hr",
-    "zu",
-    "it",
-    "lv",
-    "lt",
-    "hu",
-    "nl",
-    "no",
-    "pl",
-    "pt-BR",
-    "pt-PT",
-    "ro",
-    "sk",
-    "sl",
-    "fi",
-    "sv",
-    "vi",
-    "tr",
-    "zh-TW",
-    "zh-CN",
-    "ja",
-    "el",
-    "bg",
-    "ru",
-    "sr",
-    "uk",
-    "he",
-    "ar",
-    "hi",
-    "th",
-    "ko",
-]
 # The language to filter all requests
 SELECTED_LANGUAGE = "zh-CN"
+# URL of the FlareSolverr proxy server
+FLARE_SOLVERR_URL = os.getenv("FLARE_SOLVERR_URL")
 
 # Scrapy-Redis settings
+# See https://github.com/rmax/scrapy-redis/wiki/Usage
 # Enables scheduling storing requests queue in redis
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 # Ensure all spiders share same duplicates filter through redis
@@ -198,13 +159,6 @@ SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.FifoQueue"
 SCHEDULER_PERSIST = True
 
 # Database settings
-# The database settings are stored in a .env local file in the project directory
-import os
-from dotenv import load_dotenv, find_dotenv
-
-# Load environment variables from .env file
-load_dotenv(find_dotenv())
-
 # Redis database environment variables
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
