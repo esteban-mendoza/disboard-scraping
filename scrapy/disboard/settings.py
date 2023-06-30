@@ -154,7 +154,8 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 # Scheduler queue class:
 # - Use LifoQueue to process requests in Depth-first order
 # - Use FifoQueue to process requests in Breadth-first order
-SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.FifoQueue"
+# - Use PriorityQueue to process requests by priority
+SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.PriorityQueue"
 # Don't cleanup Redis queues. Allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 
