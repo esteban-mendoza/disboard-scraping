@@ -143,7 +143,7 @@ FILTER_BY_LANGUAGE = False
 # The language to filter all requests
 SELECTED_LANGUAGE = "zh-CN"
 # URL of the FlareSolverr proxy server
-FLARE_SOLVERR_URL = "http://localhost:8191/v1"
+FLARE_SOLVERR_URL = os.getenv("FLARE_SOLVERR_URL")
 
 # Scrapy-Redis settings
 # See https://github.com/rmax/scrapy-redis/wiki/Usage
@@ -154,7 +154,7 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 # Scheduler queue class:
 # - Use LifoQueue to process requests in Depth-first order
 # - Use FifoQueue to process requests in Breadth-first order
-SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.LifoQueue"
+SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.FifoQueue"
 # Don't cleanup Redis queues. Allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 
