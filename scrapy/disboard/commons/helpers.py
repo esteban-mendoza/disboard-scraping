@@ -55,7 +55,7 @@ def request_next_url(self, response: Response) -> Generator[Request, None, None]
     """
     next_url = response.css(".next a::attr(href)").get()
     if next_url is not None:
-        next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}"
+        next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}{self.language_postfix}"
         yield Request(url=next_url)
 
 
@@ -69,7 +69,7 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
     tags = response.css(".tag::attr(title)").getall()
     unique_tags_list = list(set(tags))
     for tag in unique_tags_list:
-        tag_url = f"{self.base_url}/servers/tag/{tag}"
+        tag_url = f"{self.base_url}/servers/tag/{tag}{self.language_postfix}"
         yield Request(url=tag_url)
 
 
@@ -84,5 +84,5 @@ def request_all_category_urls(
     """
     categories = response.css(".category::attr(href)").getall()
     for category in categories:
-        category_url = f"{self.base_url}{response.urljoin(category)}"
+        category_url = f"{self.base_url}{response.urljoin(category)}{self.language_postfix}"
         yield Request(url=category_url)

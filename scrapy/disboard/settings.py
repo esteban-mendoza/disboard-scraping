@@ -129,8 +129,10 @@ FLARE_SOLVERR_URL = "http://localhost:8191/v1"
 
 # Startup settings
 # If True, the crawler will delete all data from dupefilter and scheduler
-# and start from the beginning
+# and start from the start_url
 START_FROM_BEGINNING = False
+# If True, the crawler will append SELECTED_LANGUAGE language code to all URLs
+FILTER_BY_LANGUAGE = False
 # A list of the 46 languages supported by Disboard
 AVAILABLE_LANGUAGES = [
     "Unspecified",
@@ -181,7 +183,7 @@ AVAILABLE_LANGUAGES = [
     "ko",
 ]
 # The language to filter all requests
-SELECTED_LANGUAGE = AVAILABLE_LANGUAGES[0]
+SELECTED_LANGUAGE = "zh-CN"
 
 # Scrapy-Redis settings
 # Enables scheduling storing requests queue in redis
