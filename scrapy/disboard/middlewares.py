@@ -107,7 +107,10 @@ class FlareSolverrDownloaderMiddleware:
             )
             return html_response
         else:
-            raise IgnoreRequest(f"Failed to get response from proxy server: {response}")
+            self.logger.log(
+                INFO,
+                f"Failed to get response from proxy server: <{response.status_code} {response.reason}>",
+            )
 
     def process_response(self, request, response, spider):
         # Called with the response returned from the downloader.
