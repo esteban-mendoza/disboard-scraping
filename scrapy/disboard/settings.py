@@ -105,7 +105,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 # Logging settings
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # File name to use for logging output. If None, standard error will be used.
-LOG_FILE = "disboard-2023-06-30.log"
+LOG_FILE = "disboard.log"
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
 LOG_FILE_APPEND = True
 # The encoding to be used for logging
@@ -129,6 +129,7 @@ load_dotenv(find_dotenv())
 
 # If True, the crawler will delete all data from dupefilter and scheduler
 # and start from the start_url
+# TODO: Implement this functionality
 START_FROM_BEGINNING = True
 # If True, the crawler will use Google's web cache to get the HTML of the page
 USE_WEB_CACHE = False
@@ -139,9 +140,9 @@ FOLLOW_CATEGORY_LINKS = True
 # If True, the crawler will follow tag links
 FOLLOW_TAG_LINKS = True
 # If True, the crawler will append SELECTED_LANGUAGE language code to all URLs
-FILTER_BY_LANGUAGE = False
+FILTER_BY_LANGUAGE = True
 # The language to filter all requests
-SELECTED_LANGUAGE = "zh-CN"
+SELECTED_LANGUAGE = "en"
 # URL of the FlareSolverr proxy server
 FLARE_SOLVERR_URL = os.getenv("FLARE_SOLVERR_URL")
 
