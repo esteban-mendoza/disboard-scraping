@@ -1,6 +1,6 @@
 """
 This module contains a Scrapy spider that crawls the Disboard website
-starting from the /servers endpoint, and follows pagination and tag links.
+starting from the /servers endpoint.
 """
 
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
@@ -9,7 +9,6 @@ from disboard.commons.helpers import (
     request_next_url,
     request_all_tag_urls,
     request_all_category_urls,
-    request_all_filter_by_language,
 )
 from scrapy_redis.spiders import RedisSpider
 
@@ -33,6 +32,13 @@ class ServersSpider(RedisSpider):
             return ""
 
     @property
+    def language_postfix(self):
+        if self.settings.get("FILTER_BY_LANGUAGE"):
+            return f"?fl={self.settings.get('SELECTED_LANGUAGE')}"
+        else:
+            return ""
+
+    @property
     def base_url(self):
         return f"{self.page_iterator_prefix}{DISBOARD_URL}"
 
@@ -51,6 +57,3 @@ class ServersSpider(RedisSpider):
 
         if self.settings.get("FOLLOW_CATEGORY_LINKS"):
             yield from request_all_category_urls(self, response)
-
-        if self.settings.get("FILTER_BY_LANGUAGE"):
-            yield from request_all_filter_by_language(self, response)

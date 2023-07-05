@@ -52,25 +52,14 @@ def request_next_url(self, response: Response) -> Generator[Request, None, None]
     for the next page.
 
     This function is meant to be used in a scrapy.Spider.parse method.
+
+    The priority of the request is set to 3. Higher priority requests
+    are processed earlier.
     """
     next_url = response.css(".next a::attr(href)").get()
     if next_url is not None:
-        next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}"
-        yield Request(url=next_url)
-
-
-def request_all_tag_urls(self, response: Response) -> Generator[Request, None, None]:
-    """
-    Given a response from a Disboard server list page, returns a generator
-    with all the requests for tag pages.
-
-    This function is meant to be used in a scrapy.Spider.parse method.
-    """
-    tags = response.css(".tag::attr(title)").getall()
-    unique_tags_list = list(set(tags))
-    for tag in unique_tags_list:
-        tag_url = f"{self.base_url}/servers/tag/{tag}"
-        yield Request(url=tag_url)
+        next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}{self.language_postfix}"
+        yield Request(url=next_url, priority=3)
 
 
 def request_all_category_urls(
@@ -81,25 +70,30 @@ def request_all_category_urls(
     with all the requests for category pages.
 
     This function is meant to be used in a scrapy.Spider.parse method.
+
+    The priority of the request is set to 2. Higher priority requests
+    are processed earlier.
     """
     categories = response.css(".category::attr(href)").getall()
     for category in categories:
-        category_url = f"{self.base_url}{response.urljoin(category)}"
-        yield Request(url=category_url)
+        category_url = (
+            f"{self.base_url}{response.urljoin(category)}{self.language_postfix}"
+        )
+        yield Request(url=category_url, priority=2)
 
 
-def request_all_filter_by_language(
-    self, response: Response
-) -> Generator[Request, None, None]:
+def request_all_tag_urls(self, response: Response) -> Generator[Request, None, None]:
     """
     Given a response from a Disboard server list page, returns a generator
-    with all the requests for filtering by language.
+    with all the requests for tag pages.
 
     This function is meant to be used in a scrapy.Spider.parse method.
+
+    The priority of the request is set to 1. Higher priority requests
+    are processed earlier.
     """
-    languages = response.css(
-        "#dropdown-menu-filter-language a.dropdown-item::attr(href)"
-    ).getall()
-    for language in languages:
-        language_url = f"{self.page_iterator_prefix}{response.urljoin(language)}"
-        yield Request(url=language_url)
+    tags = response.css(".tag::attr(title)").getall()
+    unique_tags_list = list(set(tags))
+    for tag in unique_tags_list:
+        tag_url = f"{self.base_url}/servers/tag/{tag}{self.language_postfix}"
+        yield Request(url=tag_url, priority=1)
