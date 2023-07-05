@@ -41,7 +41,6 @@ the [Database connection](#database-connection) section below.
 For a minimal local run, use the command below.
 
 ```bash
-cd scrapy
 scrapy crawl servers
 ```
 

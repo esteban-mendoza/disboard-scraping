@@ -1,6 +1,5 @@
-.env
 venv
 __pycache__
+*.env
 *.jsonl
 *.log
-crawls
