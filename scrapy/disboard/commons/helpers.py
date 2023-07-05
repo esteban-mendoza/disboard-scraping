@@ -2,12 +2,30 @@ from disboard.items import DisboardServerItem
 from datetime import datetime
 from scrapy.http import Response, Request
 from typing import Generator
+from urllib.parse import urljoin
 
 
-def extract_disboard_server_items(response: Response) -> DisboardServerItem:
+def count_disboard_server_items(response: Response) -> int:
     """
-    Given a response from a Disboard server list page, yields all
-    the DisboardServerItem's from that page.
+    Given a response from a Disboard server list page, returns the number
+    of DisboardServerItem's found in the response.
+
+    If no DisboardServerItem's are found, returns 0.
+    """
+
+    server_info_selectorlist = response.css(".server-info")
+
+    return len(server_info_selectorlist)
+
+
+def extract_disboard_server_items(
+    response: Response,
+) -> Generator[DisboardServerItem, None, None]:
+    """
+    Given a response from a Disboard server list page, returns a generator
+    of all the DisboardServerItem's from that page.
+
+    If no DisboardServerItem's are found, returns None.
 
     This function is meant to be used in a scrapy.Spider.parse method.
     """
@@ -58,7 +76,7 @@ def request_next_url(self, response: Response) -> Generator[Request, None, None]
     """
     next_url = response.css(".next a::attr(href)").get()
     if next_url is not None:
-        next_url = f"{self.page_iterator_prefix}{response.urljoin(next_url)}{self.language_postfix}"
+        next_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, next_url)}"
         yield Request(url=next_url, priority=3)
 
 
@@ -74,11 +92,9 @@ def request_all_category_urls(
     The priority of the request is set to 2. Higher priority requests
     are processed earlier.
     """
-    categories = response.css(".category::attr(href)").getall()
-    for category in categories:
-        category_url = (
-            f"{self.base_url}{response.urljoin(category)}{self.language_postfix}"
-        )
+    category_urls = response.css(".category::attr(href)").getall()
+    for category_url in category_urls:
+        category_url = f"{self.page_iterator_prefix}{self.base_url}{category_url}{self.language_postfix}"
         yield Request(url=category_url, priority=2)
 
 
@@ -95,5 +111,5 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
     tags = response.css(".tag::attr(title)").getall()
     unique_tags_list = list(set(tags))
     for tag in unique_tags_list:
-        tag_url = f"{self.base_url}/servers/tag/{tag}{self.language_postfix}"
+        tag_url = f"{self.page_iterator_prefix}{self.base_url}/servers/tag/{tag}{self.language_postfix}"
         yield Request(url=tag_url, priority=1)
