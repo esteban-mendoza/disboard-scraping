@@ -20,7 +20,7 @@ NEWSPIDER_MODULE = "disboard.spiders"
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 16
+# CONCURRENT_REQUESTS = 16
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -51,7 +51,7 @@ CONCURRENT_REQUESTS = 16
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
+    "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
 }
 
@@ -69,14 +69,14 @@ ITEM_PIPELINES = {
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-AUTOTHROTTLE_ENABLED = False
+AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 0
+AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
 AUTOTHROTTLE_MAX_DELAY = 10
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 80
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
@@ -84,7 +84,7 @@ AUTOTHROTTLE_DEBUG = True
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
 RETRY_ENABLED = True
 # Maximum number of times to retry, in addition to the first download.
-RETRY_TIMES = 1
+RETRY_TIMES = 1.5
 # Which HTTP response codes to retry.
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 404, 408, 429]
 
@@ -136,7 +136,7 @@ load_dotenv(find_dotenv())
 # TODO: Implement this functionality
 START_FROM_BEGINNING = True
 # If True, the crawler will use Google's web cache to get the HTML of the page
-USE_WEB_CACHE = True
+USE_WEB_CACHE = False
 # If True, the crawler will follow pagination links
 FOLLOW_PAGINATION_LINKS = True
 # If True, the crawler will follow category links
@@ -146,9 +146,9 @@ FOLLOW_TAG_LINKS = True
 # If True, the crawler will append SELECTED_LANGUAGE language code to all URLs
 FILTER_BY_LANGUAGE = True
 # The language to filter all requests
-SELECTED_LANGUAGE = "Unspecified"
+SELECTED_LANGUAGE = "fr"
 # URL of the FlareSolverr proxy server
-FLARE_SOLVERR_URL = os.getenv("FLARE_SOLVERR_URL")
+PROXY_URL = os.getenv("PROXY_URL")
 
 # Scrapy-Redis settings
 # See https://github.com/rmax/scrapy-redis/wiki/Usage
