@@ -6,6 +6,7 @@ starting from the /servers endpoint.
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 from disboard.commons.helpers import (
     count_disboard_server_items,
+    has_pagination_links,
     extract_disboard_server_items,
     request_next_url,
     request_all_tag_urls,
@@ -52,7 +53,7 @@ class ServersSpider(RedisSpider):
         If no DisboardServerItems are found, stops parsing the response.
         """
         n_of_server_items = count_disboard_server_items(response)
-
+        
         if n_of_server_items > 0:
             self.logger.log(
                 INFO, f"Found {n_of_server_items} DisboardServerItems in {response.url}"
@@ -60,6 +61,7 @@ class ServersSpider(RedisSpider):
 
             yield from extract_disboard_server_items(response)
 
+        if n_of_server_items >= 8 and has_pagination_links(response):
             if self.settings.get("FOLLOW_PAGINATION_LINKS"):
                 yield from request_next_url(self, response)
 

@@ -12,10 +12,19 @@ def count_disboard_server_items(response: Response) -> int:
 
     If no DisboardServerItem's are found, returns 0.
     """
-
     server_info_selectorlist = response.css(".server-info")
 
     return len(server_info_selectorlist)
+
+
+def has_pagination_links(response: Response) -> bool:
+    """
+    Given a response from a Disboard server list page, returns True if
+    the response has pagination links, False otherwise.
+    """
+    next_url = response.css(".next a::attr(href)").get()
+
+    return next_url is not None
 
 
 def extract_disboard_server_items(

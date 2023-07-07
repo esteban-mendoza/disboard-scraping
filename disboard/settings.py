@@ -20,14 +20,14 @@ NEWSPIDER_MODULE = "disboard.spiders"
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 2
+CONCURRENT_REQUESTS = 16
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 6
 # The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 1
+# CONCURRENT_REQUESTS_PER_DOMAIN = 200
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
@@ -69,14 +69,14 @@ ITEM_PIPELINES = {
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_ENABLED = False
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 6
+AUTOTHROTTLE_START_DELAY = 0
 # The maximum download delay to be set in case of high latencies
-AUTOTHROTTLE_MAX_DELAY = 60
+AUTOTHROTTLE_MAX_DELAY = 10
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1.2
+AUTOTHROTTLE_TARGET_CONCURRENCY = 80
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = True
 
@@ -103,7 +103,11 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 # Logging settings
+import logging
+
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
+# Log level to use (defaults to DEBUG)
+LOG_LEVEL = logging.INFO
 # File name to use for logging output. If None, standard error will be used.
 LOG_FILE = "disboard.log"
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
@@ -132,7 +136,7 @@ load_dotenv(find_dotenv())
 # TODO: Implement this functionality
 START_FROM_BEGINNING = True
 # If True, the crawler will use Google's web cache to get the HTML of the page
-USE_WEB_CACHE = False
+USE_WEB_CACHE = True
 # If True, the crawler will follow pagination links
 FOLLOW_PAGINATION_LINKS = True
 # If True, the crawler will follow category links
@@ -142,7 +146,7 @@ FOLLOW_TAG_LINKS = True
 # If True, the crawler will append SELECTED_LANGUAGE language code to all URLs
 FILTER_BY_LANGUAGE = True
 # The language to filter all requests
-SELECTED_LANGUAGE = "en"
+SELECTED_LANGUAGE = "Unspecified"
 # URL of the FlareSolverr proxy server
 FLARE_SOLVERR_URL = os.getenv("FLARE_SOLVERR_URL")
 
@@ -162,9 +166,7 @@ SCHEDULER_PERSIST = True
 
 # Database settings
 # Redis database environment variables
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
-REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+REDIS_URL = os.getenv("REDIS_URL")
 
 # Postgres environment variables
 DB_HOST = os.getenv("DB_HOST")
