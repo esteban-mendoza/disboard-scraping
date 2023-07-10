@@ -20,14 +20,14 @@ NEWSPIDER_MODULE = "disboard.spiders"
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 16
+# CONCURRENT_REQUESTS = 1
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 6
+DOWNLOAD_DELAY = 6
 # The download delay setting will honor only one of:
-# CONCURRENT_REQUESTS_PER_DOMAIN = 200
+# CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
@@ -71,7 +71,7 @@ ITEM_PIPELINES = {
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 5
+AUTOTHROTTLE_START_DELAY = 6
 # The maximum download delay to be set in case of high latencies
 AUTOTHROTTLE_MAX_DELAY = 10
 # The average number of requests Scrapy should be sending in parallel to
@@ -82,7 +82,7 @@ AUTOTHROTTLE_DEBUG = True
 
 # Enable and configure retry middleware
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
-RETRY_ENABLED = True
+RETRY_ENABLED = False
 # Maximum number of times to retry, in addition to the first download.
 RETRY_TIMES = 1.5
 # Which HTTP response codes to retry.
@@ -123,33 +123,6 @@ LOG_STDOUT = True
 # SCHEDULER_DISK_QUEUE = "scrapy.squeues.PickleFifoDiskQueue"
 # SCHEDULER_MEMORY_QUEUE = "scrapy.squeues.FifoMemoryQueue"
 
-# Custom settings
-# Sensible settings are stored in a .env local file in the project directory
-import os
-from dotenv import load_dotenv, find_dotenv
-
-# Load environment variables from .env file
-load_dotenv(find_dotenv())
-
-# If True, the crawler will delete all data from dupefilter and scheduler
-# and start from the start_url
-# TODO: Implement this functionality
-START_FROM_BEGINNING = True
-# If True, the crawler will use Google's web cache to get the HTML of the page
-USE_WEB_CACHE = False
-# If True, the crawler will follow pagination links
-FOLLOW_PAGINATION_LINKS = True
-# If True, the crawler will follow category links
-FOLLOW_CATEGORY_LINKS = True
-# If True, the crawler will follow tag links
-FOLLOW_TAG_LINKS = True
-# If True, the crawler will append SELECTED_LANGUAGE language code to all URLs
-FILTER_BY_LANGUAGE = True
-# The language to filter all requests
-SELECTED_LANGUAGE = "fr"
-# URL of the FlareSolverr proxy server
-PROXY_URL = os.getenv("PROXY_URL")
-
 # Scrapy-Redis settings
 # See https://github.com/rmax/scrapy-redis/wiki/Usage
 # Enables scheduling storing requests queue in redis
@@ -164,13 +137,28 @@ SCHEDULER_QUEUE_CLASS = "scrapy_redis.queue.PriorityQueue"
 # Don't cleanup Redis queues. Allows to pause/resume crawls.
 SCHEDULER_PERSIST = True
 
+# Custom settings
+# Sensible settings must be stored in environment variables
+import os
+
+# If True, the crawler will use Google's web cache to get the HTML of the page
+USE_WEB_CACHE = os.getenv("USE_WEB_CACHE", False)
+# If True, the crawler will follow pagination links
+FOLLOW_PAGINATION_LINKS = os.getenv("FOLLOW_PAGINATION_LINKS", True)
+# If True, the crawler will follow category links
+FOLLOW_CATEGORY_LINKS = os.getenv("FOLLOW_CATEGORY_LINKS", True)
+# If True, the crawler will follow tag links
+FOLLOW_TAG_LINKS = os.getenv("FOLLOW_TAG_LINKS", True)
+# The language to filter all requests by
+SELECTED_LANGUAGE = os.getenv("SELECTED_LANGUAGE", "")
+# If True, the crawler will perform concurrent requests to the proxy server
+CONCURRENT_PROXY_REQUESTS = os.getenv("CONCURRENT_PROXY_REQUESTS", False)
+# URL of the FlareSolverr proxy server
+PROXY_URL = os.getenv("PROXY_URL")
+
 # Database settings
 # Redis database environment variables
 REDIS_URL = os.getenv("REDIS_URL")
 
 # Postgres environment variables
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_URL = os.getenv("DB_URL")
