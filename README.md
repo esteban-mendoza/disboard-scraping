@@ -41,7 +41,7 @@ the [Database connection](#database-connection) section below.
 For a minimal local run, use the command below.
 
 ```bash
-scrapy crawl servers
+python3 crawl.py --spider servers
 ```
 
 ## Configuration
