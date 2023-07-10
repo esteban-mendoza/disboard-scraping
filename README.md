@@ -73,7 +73,7 @@ The following custom settings have been added:
 - `SELECTED_LANGUAGE`: The language code that will be appended to all URLs.
   `FILTER_BY_LANGUAGE` must be set to `True` for this to work.
 
-- `FLARE_SOLVERR_URL`: The URL of the FlareSolverr proxy server. By default,
+- `PROXY_URL`: The URL of the FlareSolverr proxy server. By default,
   it is set to `http://localhost:8191/v1`. In order to use the FlareSolverr,
   the `settings.py` file must contain the following lines:
 

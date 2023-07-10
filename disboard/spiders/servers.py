@@ -53,7 +53,7 @@ class ServersSpider(RedisSpider):
         If no DisboardServerItems are found, stops parsing the response.
         """
         n_of_server_items = count_disboard_server_items(response)
-        
+
         if n_of_server_items > 0:
             self.logger.log(
                 INFO, f"Found {n_of_server_items} DisboardServerItems in {response.url}"

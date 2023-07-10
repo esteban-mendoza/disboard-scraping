@@ -6,67 +6,15 @@
 import requests
 from scrapy import signals
 from scrapy.http import HtmlResponse
-from scrapy.exceptions import IgnoreRequest
-from disboard.settings import FLARE_SOLVERR_URL
-from logging import getLogger, INFO
-
-# useful for handling different item types with a single interface
-from itemadapter import is_item, ItemAdapter
+from logging import getLogger, INFO, WARNING
+from twisted.internet.threads import deferToThread
 
 
-class DisboardSpiderMiddleware:
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
-    def process_spider_input(self, response, spider):
-        # Called for each response that goes through the spider
-        # middleware and into the spider.
-
-        # Should return None or raise an exception.
-        return None
-
-    def process_spider_output(self, response, result, spider):
-        # Called with the results returned from the Spider, after
-        # it has processed the response.
-
-        # Must return an iterable of Request, or item objects.
-        for i in result:
-            yield i
-
-    def process_spider_exception(self, response, exception, spider):
-        # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
-
-        # Should return either None or an iterable of Request or item objects.
-        pass
-
-    def process_start_requests(self, start_requests, spider):
-        # Called with the start requests of the spider, and works
-        # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
-
-        # Must return only requests (not items).
-        for r in start_requests:
-            yield r
-
-    def spider_opened(self, spider):
-        spider.logger.info("Spider opened: %s" % spider.name)
-
-
-class FlareSolverrDownloaderMiddleware:
+class FlareSolverrProxyMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the downloader middleware does not modify the
     # passed objects.
     logger = getLogger(__name__)
-    proxy_url = FLARE_SOLVERR_URL
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -77,19 +25,25 @@ class FlareSolverrDownloaderMiddleware:
 
     def process_request(self, request, spider):
         """
-        This method forwards all requests to the FlareSolverr server,
-        awaits and returns the response from the proxy server.
+        This method forwards all requests to the FlareSolverr server
+        in a concurrent thread. It awaits and returns the response
+        from the proxy server.
         """
+        return deferToThread(self._process_request, request, spider)
 
+    def _process_request(self, request, spider):
+        """
+        This method is called in a concurrent thread. It sends a POST
+        request to the FlareSolverr server and processes the response
+        to return a Scrapy Response object.
+        """
         post_body = {
             "url": request.url,
             "cmd": "request.get",
-            "maxTimeout": 60000,
         }
+        headers = {"Content-Type": "application/json"}
 
-        response = requests.post(
-            self.proxy_url, headers={"Content-Type": "application/json"}, json=post_body
-        )
+        response = requests.post(self.proxy_url, headers=headers, json=post_body)
 
         if response.status_code == 200:
             solution_response = response.json()["solution"]
@@ -103,13 +57,13 @@ class FlareSolverrDownloaderMiddleware:
             )
             self.logger.log(
                 INFO,
-                f"Successfully got response from proxy server: <{html_response.status} {html_response.url}>",
+                f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
             )
             return html_response
         else:
             self.logger.log(
-                INFO,
-                f"Failed to get response from proxy server: <{response.status_code} {response.reason}>",
+                WARNING,
+                f"Failed to get response from proxy server {self.proxy_url}: <{response.status_code} {response.reason}>",
             )
 
     def process_response(self, request, response, spider):
@@ -132,4 +86,5 @@ class FlareSolverrDownloaderMiddleware:
         pass
 
     def spider_opened(self, spider):
+        self.proxy_url = spider.settings.get("PROXY_URL")
         spider.logger.info("Spider opened: %s" % spider.name)
