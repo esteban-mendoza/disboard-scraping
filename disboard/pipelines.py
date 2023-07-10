@@ -15,29 +15,15 @@ class DisboardPipeline:
 class PostgresPipeline:
     table_name = "public.disboard_servers"
 
-    def __init__(self, db_host, db_port, db_name, db_user, db_password):
-        self.db_host = db_host
-        self.db_port = db_port
-        self.db_name = db_name
-        self.db_user = db_user
-        self.db_password = db_password
+    def __init__(self, db_url):
+        self.db_url = db_url
 
     @classmethod
     def from_crawler(cls, crawler):
-        return cls(
-            db_host=crawler.settings.get("DB_HOST"),
-            db_port=crawler.settings.get("DB_PORT"),
-            db_name=crawler.settings.get("DB_NAME"),
-            db_user=crawler.settings.get("DB_USER"),
-            db_password=crawler.settings.get("DB_PASSWORD"),
-        )
+        return cls(db_url=crawler.settings.get("DB_URL"))
 
     def open_spider(self, spider):
-        connection_string = f"""
-            host={self.db_host} port={self.db_port} dbname={self.db_name} 
-            user={self.db_user} password={self.db_password}
-        """
-        self.client = psycopg.connect(connection_string)
+        self.client = psycopg.connect(self.db_url)
         self.client.autocommit = True
         self.cursor = self.client.cursor()
 
