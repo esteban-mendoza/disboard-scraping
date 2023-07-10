@@ -25,8 +25,8 @@ class ServersSpider(RedisSpider):
     logger = getLogger(__name__)
 
     name: str = "servers"
-    redis_key: str = "servers:start_urls"
     base_url: str = DISBOARD_URL
+    allowed_domains: list = ["disboard.org", "webcache.googleusercontent.com"]
 
     # Max idle time (in seconds) before the spider stops checking redis and shuts down
     max_idle_time: float = 7
@@ -40,10 +40,11 @@ class ServersSpider(RedisSpider):
 
     @property
     def language_postfix(self):
-        if self.settings.get("FILTER_BY_LANGUAGE"):
-            return f"?fl={self.settings.get('SELECTED_LANGUAGE')}"
-        else:
+        selected_language = self.settings.get("SELECTED_LANGUAGE")
+        if selected_language == "":
             return ""
+        else:
+            return f"?fl={selected_language}"
 
     def parse(self, response):
         """
@@ -54,19 +55,20 @@ class ServersSpider(RedisSpider):
         """
         n_of_server_items = count_disboard_server_items(response)
 
-        if n_of_server_items > 0:
-            self.logger.log(
-                INFO, f"Found {n_of_server_items} DisboardServerItems in {response.url}"
-            )
+        self.logger.log(
+            INFO, f"Found {n_of_server_items} DisboardServerItems in {response.url}"
+        )
 
+        if n_of_server_items > 0:
             yield from extract_disboard_server_items(response)
 
-        if n_of_server_items >= 8 and has_pagination_links(response):
-            if self.settings.get("FOLLOW_PAGINATION_LINKS"):
-                yield from request_next_url(self, response)
-
-            if self.settings.get("FOLLOW_TAG_LINKS"):
-                yield from request_all_tag_urls(self, response)
+            if n_of_server_items >= 12 and has_pagination_links(response):
+                if self.settings.get("FOLLOW_PAGINATION_LINKS"):
+                    yield from request_next_url(self, response)
 
             if self.settings.get("FOLLOW_CATEGORY_LINKS"):
                 yield from request_all_category_urls(self, response)
+
+            if n_of_server_items >= 8:
+                if self.settings.get("FOLLOW_TAG_LINKS"):
+                    yield from request_all_tag_urls(self, response)

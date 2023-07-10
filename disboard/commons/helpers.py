@@ -12,9 +12,9 @@ def count_disboard_server_items(response: Response) -> int:
 
     If no DisboardServerItem's are found, returns 0.
     """
-    server_info_selectorlist = response.css(".server-info")
+    server_names = response.css(".server-name a::text").getall()
 
-    return len(server_info_selectorlist)
+    return len(server_names)
 
 
 def has_pagination_links(response: Response) -> bool:
@@ -25,6 +25,10 @@ def has_pagination_links(response: Response) -> bool:
     next_url = response.css(".next a::attr(href)").get()
 
     return next_url is not None
+
+
+def get_guild_ids(response: Response) -> set:
+    pass
 
 
 def extract_disboard_server_items(
@@ -83,10 +87,11 @@ def request_next_url(self, response: Response) -> Generator[Request, None, None]
     The priority of the request is set to 3. Higher priority requests
     are processed earlier.
     """
+    n_of_servers = count_disboard_server_items(response)
     next_url = response.css(".next a::attr(href)").get()
     if next_url is not None:
         next_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, next_url)}"
-        yield Request(url=next_url, priority=3)
+        yield Request(url=next_url, priority=n_of_servers + 50)
 
 
 def request_all_category_urls(
@@ -101,10 +106,11 @@ def request_all_category_urls(
     The priority of the request is set to 2. Higher priority requests
     are processed earlier.
     """
+    n_of_servers = count_disboard_server_items(response)
     category_urls = response.css(".category::attr(href)").getall()
     for category_url in category_urls:
         category_url = f"{self.page_iterator_prefix}{self.base_url}{category_url}{self.language_postfix}"
-        yield Request(url=category_url, priority=2)
+        yield Request(url=category_url, priority=n_of_servers + 25)
 
 
 def request_all_tag_urls(self, response: Response) -> Generator[Request, None, None]:
@@ -117,8 +123,9 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
     The priority of the request is set to 1. Higher priority requests
     are processed earlier.
     """
-    tags = response.css(".tag::attr(title)").getall()
-    unique_tags_list = list(set(tags))
-    for tag in unique_tags_list:
-        tag_url = f"{self.page_iterator_prefix}{self.base_url}/servers/tag/{tag}{self.language_postfix}"
-        yield Request(url=tag_url, priority=1)
+    n_of_servers = count_disboard_server_items(response)
+    tag_urls = response.css(".tag::attr(href)").getall()
+    unique_tag_urls_list = list(set(tag_urls))
+    for tag_url in unique_tag_urls_list:
+        tag_url = f"{self.page_iterator_prefix}{self.base_url}{tag_url}{self.language_postfix}"
+        yield Request(url=tag_url, priority=n_of_servers + 1)
