@@ -25,11 +25,17 @@ class FlareSolverrProxyMiddleware:
 
     def process_request(self, request, spider):
         """
-        This method forwards all requests to the FlareSolverr server
-        in a concurrent thread. It awaits and returns the response
-        from the proxy server.
+        This method forwards all requests to the FlareSolverr server.
+        It awaits and returns the response from the proxy server.
+
+        If CONCURRENT_PROXY_REQUESTS is set to True, the request is
+        processed in a concurrent thread. Otherwise, the request
+        blocks the main thread and is processed synchronously.
         """
-        return deferToThread(self._process_request, request, spider)
+        if self.concurrent_proxy_requests:
+            return deferToThread(self._process_request, request, spider)
+        else:
+            return self._process_request(request, spider)
 
     def _process_request(self, request, spider):
         """
@@ -63,7 +69,7 @@ class FlareSolverrProxyMiddleware:
         else:
             self.logger.log(
                 WARNING,
-                f"Failed to get response from proxy server {self.proxy_url}: <{response.status_code} {response.reason}>",
+                f"Proxy server {self.proxy_url}. URL response {request.url}: <{response.status_code} {response.reason}>",
             )
 
     def process_response(self, request, response, spider):
@@ -87,4 +93,7 @@ class FlareSolverrProxyMiddleware:
 
     def spider_opened(self, spider):
         self.proxy_url = spider.settings.get("PROXY_URL")
+        self.concurrent_proxy_requests = spider.settings.get(
+            "CONCURRENT_PROXY_REQUESTS"
+        )
         spider.logger.info("Spider opened: %s" % spider.name)
