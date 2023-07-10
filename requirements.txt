@@ -1,4 +1,5 @@
 psycopg[binary]
+pytest
 python-dotenv
 requests
 scrapy
