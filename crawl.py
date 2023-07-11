@@ -81,6 +81,13 @@ def add_cli_arguments() -> ArgumentParser:
         type=str,
     )
     parser.add_argument(
+        "--restart-job",
+        help="Clear the Redis queue and starts the job from the beginning \
+            using the provided --start-url and --selected-language",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
         "--start-url",
         help="The URL to start scraping from",
         type=str,
@@ -140,15 +147,20 @@ if __name__ == "__main__":
         os.environ["REDIS_URL"] = args.redis_url
     if args.db_url:
         os.environ["DB_URL"] = args.db_url
-    if args.start_url:
-        os.environ["START_URL"] = args.start_url
-        os.environ["SELECTED_LANGUAGE"] = args.selected_language
-
-        # If a start_url is provided, restart the job
-        if args.selected_language is None:
+    if args.restart_job:
+        if args.start_url:
+            os.environ["START_URL"] = args.start_url
+        else:
+            raise ValueError("--start-url is required when --restart-job is provided")
+        if args.selected_language:
+            os.environ["SELECTED_LANGUAGE"] = args.selected_language
+        else:
             raise ValueError(
-                "When restarting the job you must provide a value for --selected-language"
+                "--selected-language is required when --restart-job is provided"
             )
+
+        # If the user wants to restart the job, clear the Redis queues
+        # and set the start_url and selected_language
         restart_job()
 
     # Setup the Spider name

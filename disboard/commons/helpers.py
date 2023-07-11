@@ -84,8 +84,8 @@ def request_next_url(self, response: Response) -> Generator[Request, None, None]
 
     This function is meant to be used in a scrapy.Spider.parse method.
 
-    The priority of the request is set to 3. Higher priority requests
-    are processed earlier.
+    The priority of the request is set to the number of servers + 50.
+    Higher priority requests are processed earlier.
     """
     n_of_servers = count_disboard_server_items(response)
     next_url = response.css(".next a::attr(href)").get()
@@ -103,13 +103,13 @@ def request_all_category_urls(
 
     This function is meant to be used in a scrapy.Spider.parse method.
 
-    The priority of the request is set to 2. Higher priority requests
-    are processed earlier.
+    The priority of the request is set to the number of servers + 25.
+    Higher priority requestsare processed earlier.
     """
     n_of_servers = count_disboard_server_items(response)
     category_urls = response.css(".category::attr(href)").getall()
     for category_url in category_urls:
-        category_url = f"{self.page_iterator_prefix}{self.base_url}{category_url}{self.language_postfix}"
+        category_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, category_url)}{self.language_postfix}"
         yield Request(url=category_url, priority=n_of_servers + 25)
 
 
@@ -120,12 +120,11 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
 
     This function is meant to be used in a scrapy.Spider.parse method.
 
-    The priority of the request is set to 1. Higher priority requests
-    are processed earlier.
+    The priority of the request is set to the number of servers + 1.
+    Higher priority requests are processed earlier.
     """
     n_of_servers = count_disboard_server_items(response)
     tag_urls = response.css(".tag::attr(href)").getall()
-    unique_tag_urls_list = list(set(tag_urls))
-    for tag_url in unique_tag_urls_list:
-        tag_url = f"{self.page_iterator_prefix}{self.base_url}{tag_url}{self.language_postfix}"
+    for tag_url in tag_urls:
+        tag_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, tag_url)}{self.language_postfix}"
         yield Request(url=tag_url, priority=n_of_servers + 1)

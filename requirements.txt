@@ -1,5 +1,7 @@
 psycopg[binary]
+pytest
 python-dotenv
 requests
 scrapy
+scrapy-domain-delay
 scrapy-redis
