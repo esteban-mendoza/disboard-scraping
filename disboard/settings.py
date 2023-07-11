@@ -88,6 +88,9 @@ RETRY_TIMES = 1.5
 # Which HTTP response codes to retry.
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 404, 408, 429]
 
+# Timeout middleware settings
+# See https://docs.scrapy.org/en/latest/topics/settings.html#download-timeout
+DOWNLOAD_TIMEOUT = 300
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
