@@ -123,7 +123,7 @@ def restart_job() -> None:
         pipe.delete(f"{spider_name}:requests")
         pipe.lpush(f"{spider_name}:start_urls", start_url)
         pipe.execute()
-    
+
     client.close()
 
 
@@ -160,6 +160,8 @@ if __name__ == "__main__":
             os.environ["START_URL"] = args.start_url
         else:
             raise ValueError("--start-url is required when --restart-job is provided")
+        if args.language:
+            os.environ["LANGUAGE"] = args.language
 
         restart_job()
 

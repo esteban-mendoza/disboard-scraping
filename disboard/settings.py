@@ -53,17 +53,17 @@ DOWNLOAD_DELAY = 6
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-#    "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
+    "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
 }
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
-# EXTENSIONS = {
-#     "scrapy.extensions.telnet.TelnetConsole": None,
-#     "scrapy.extensions.throttle.AutoThrottle": None,
-#     "scrapy_domain_delay.extensions.CustomDelayThrottle": 300,
-# }
+EXTENSIONS = {
+    "scrapy.extensions.telnet.TelnetConsole": None,
+    # "scrapy.extensions.throttle.AutoThrottle": None,
+    # "scrapy_domain_delay.extensions.CustomDelayThrottle": 300,
+}
 
 
 # Configure item pipelines
@@ -81,20 +81,20 @@ ITEM_PIPELINES = {
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-AUTOTHROTTLE_ENABLED = False
+AUTOTHROTTLE_ENABLED = True
 # The initial download delay
-# AUTOTHROTTLE_START_DELAY = 6
+AUTOTHROTTLE_START_DELAY = 6
 # The maximum download delay to be set in case of high latencies
-# AUTOTHROTTLE_MAX_DELAY = 10
+AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-# AUTOTHROTTLE_TARGET_CONCURRENCY = 1
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 # Enable showing throttling stats for every response received:
-# AUTOTHROTTLE_DEBUG = True
+AUTOTHROTTLE_DEBUG = True
 
 # Enable and configure retry middleware
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
-RETRY_ENABLED = False
+RETRY_ENABLED = True
 # Maximum number of times to retry, in addition to the first download.
 RETRY_TIMES = 1.5
 # Which HTTP response codes to retry.
@@ -122,7 +122,7 @@ import logging
 
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # Log level to use (defaults to DEBUG)
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 # File name to use for logging output. If None, standard error will be used.
 LOG_FILE = os.getenv("LOG_FILE", "scrapy.log")
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
