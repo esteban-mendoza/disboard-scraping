@@ -1,6 +1,8 @@
+logs
 venv
 __pycache__
+.pytest_cache
 *.env
 *.jsonl
 *.log
-.pytest_cache
+

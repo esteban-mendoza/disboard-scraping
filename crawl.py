@@ -97,11 +97,17 @@ def add_cli_arguments() -> ArgumentParser:
         help="The language to filter all requests by",
         type=str,
     )
+    parser.add_argument(
+        "--log-file",
+        help="The file to write logs to",
+        type=str,
+        default="logs/crawl.log",
+    )
 
     return parser
 
 
-def restart_job():
+def restart_job() -> None:
     """
     This function restarts the crawler job. It deletes the
     associated Redis keys {spider_name}:dupefilter, {spider_name}:requests,
@@ -117,6 +123,8 @@ def restart_job():
         pipe.delete(f"{spider_name}:requests")
         pipe.lpush(f"{spider_name}:start_urls", start_url)
         pipe.execute()
+    
+    client.close()
 
 
 if __name__ == "__main__":
@@ -152,12 +160,7 @@ if __name__ == "__main__":
             os.environ["START_URL"] = args.start_url
         else:
             raise ValueError("--start-url is required when --restart-job is provided")
-        if args.language:
-            os.environ["LANGUAGE"] = args.language
-        else:
-            raise ValueError(
-                "--language is required when --restart-job is provided"
-            )
+
         restart_job()
 
     # Setup the Spider name
