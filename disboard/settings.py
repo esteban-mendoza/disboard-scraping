@@ -1,3 +1,5 @@
+import os
+
 # Scrapy settings for disboard project
 #
 # For simplicity, this file contains only settings considered important or
@@ -58,8 +60,11 @@ DOWNLOADER_MIDDLEWARES = {
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
 # EXTENSIONS = {
-#    "scrapy.extensions.telnet.TelnetConsole": None,
+#     "scrapy.extensions.telnet.TelnetConsole": None,
+#     "scrapy.extensions.throttle.AutoThrottle": None,
+#     "scrapy_domain_delay.extensions.CustomDelayThrottle": 300,
 # }
+
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
@@ -67,18 +72,25 @@ ITEM_PIPELINES = {
     "disboard.pipelines.PostgresPipeline": 300,
 }
 
+# Custom Delay Throttle settings
+# See https://github.com/ChiaYinChen/scrapy-domain-delay/tree/master
+DOMAIN_DELAYS = {
+    'disboard': 6.0,
+}
+
+
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-AUTOTHROTTLE_ENABLED = True
+AUTOTHROTTLE_ENABLED = False
 # The initial download delay
-AUTOTHROTTLE_START_DELAY = 6
+# AUTOTHROTTLE_START_DELAY = 6
 # The maximum download delay to be set in case of high latencies
-AUTOTHROTTLE_MAX_DELAY = 10
+# AUTOTHROTTLE_MAX_DELAY = 10
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1
+# AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = True
+# AUTOTHROTTLE_DEBUG = True
 
 # Enable and configure retry middleware
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
@@ -112,7 +124,7 @@ import logging
 # Log level to use (defaults to DEBUG)
 LOG_LEVEL = logging.INFO
 # File name to use for logging output. If None, standard error will be used.
-LOG_FILE = "disboard.log"
+LOG_FILE = os.getenv("LOG_FILE", "scrapy.log")
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
 LOG_FILE_APPEND = True
 # The encoding to be used for logging
@@ -142,7 +154,6 @@ SCHEDULER_PERSIST = True
 
 # Custom settings
 # Sensible settings must be stored in environment variables
-import os
 
 # If True, the crawler will use Google's web cache to get the HTML of the page
 USE_WEB_CACHE = os.getenv("USE_WEB_CACHE", False)

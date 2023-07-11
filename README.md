@@ -97,11 +97,17 @@ The following settings are available:
   }
   ```
 
+- `CONCURRENT_PROXY_REQUESTS`: Default: `False`. If `True` and
+  `PROXY_URL` is set, the spiders will perform concurrent requests to the
+  proxy server. This will speed up the crawling process, but it will also
+  increase the load on the proxy server.
 - `REDIS_URL`: The URL of the Redis server. The spiders use Redis to queue
   and filter out duplicate requests.
 - `DB_URL`: The URL of the Postgres database. The spiders use the database
   to store the scraped data. For more information, see the
   [Database connection](#database-connection) section below.
+- `LOG_FILE`: The path to the log file. By default, it is set to
+  `scrapy.log` in the root directory.
 
 ## Database connection
 
