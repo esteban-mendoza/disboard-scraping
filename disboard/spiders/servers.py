@@ -40,11 +40,11 @@ class ServersSpider(RedisSpider):
 
     @property
     def language_postfix(self):
-        selected_language = self.settings.get("SELECTED_LANGUAGE")
-        if selected_language == "":
+        language = self.settings.get("LANGUAGE")
+        if language == "":
             return ""
         else:
-            return f"?fl={selected_language}"
+            return f"?fl={language}"
 
     def parse(self, response):
         """

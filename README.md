@@ -52,7 +52,7 @@ from the last saved state––. It will start crawling from `https://disboard.o
 and will scrape the website without filtering out by language.
 
 ```bash
-python3 crawl.py --spider servers --restart-job --start-url 'https://disboard.org/servers' --selected-language ''
+python3 crawl.py --spider servers --restart-job --start-url 'https://disboard.org/servers' --language ''
 ```
 
 You can run the following command to see all the available options to
@@ -82,7 +82,7 @@ The following settings are available:
   will follow the category links on a given server listing.
 - `FOLLOW_TAG_LINKS`: Default: `True`. If set to `True`, the spiders will
   follow the tag links on a given server listing. Be aware that this will **hugely** increase the amount of scheduled requests.
-- `SELECTED_LANGUAGE`: The language code that will be appended to all URLs.
+- `LANGUAGE`: The language code that will be appended to all URLs.
   By default, it is set to `""` ––an empty string––. This means that the spiders
   won't append any language code to the URLs. If you want to scrape the website
   in a specific language, you can set this variable to the corresponding

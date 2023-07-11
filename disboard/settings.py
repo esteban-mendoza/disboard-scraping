@@ -27,7 +27,7 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 6
+DOWNLOAD_DELAY = 15
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 1
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -53,7 +53,7 @@ DOWNLOAD_DELAY = 6
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
+#    "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
 }
 
@@ -164,7 +164,7 @@ FOLLOW_CATEGORY_LINKS = os.getenv("FOLLOW_CATEGORY_LINKS", True)
 # If True, the crawler will follow tag links
 FOLLOW_TAG_LINKS = os.getenv("FOLLOW_TAG_LINKS", True)
 # The language to filter all requests by
-SELECTED_LANGUAGE = os.getenv("SELECTED_LANGUAGE", "")
+LANGUAGE = os.getenv("LANGUAGE", "")
 # If True, the crawler will perform concurrent requests to the proxy server
 CONCURRENT_PROXY_REQUESTS = os.getenv("CONCURRENT_PROXY_REQUESTS", False)
 # URL of the FlareSolverr proxy server
