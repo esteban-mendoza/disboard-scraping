@@ -10,8 +10,10 @@ from the command line and override the default settings.
 The default settings are stored in an .env file. The user can override
 the default settings by passing command line arguments.
 """
-import redis
+import multiprocessing
 import os
+import redis
+import time
 
 from argparse import ArgumentParser, Namespace
 from dotenv import load_dotenv, find_dotenv
@@ -20,7 +22,7 @@ from scrapy.utils.project import get_project_settings
 from disboard.spiders.servers import ServersSpider
 
 
-def add_cli_arguments() -> ArgumentParser:
+def add_cli_arguments() -> Namespace:
     """
     Add command line arguments and return the parser.
     """
@@ -66,11 +68,6 @@ def add_cli_arguments() -> ArgumentParser:
         default=False,
     )
     parser.add_argument(
-        "--proxy-url",
-        help="URL of the FlareSolverr proxy server",
-        type=str,
-    )
-    parser.add_argument(
         "--redis-url",
         help="Redis database URL",
         type=str,
@@ -101,44 +98,28 @@ def add_cli_arguments() -> ArgumentParser:
         "--log-file",
         help="The file to write logs to",
         type=str,
-        default="logs/crawl.log",
+        default="scrapy.log",
+    )
+    parser.add_argument(
+        "--proxy-url",
+        help="URL of the FlareSolverr proxy server",
+        type=str,
+    )
+    parser.add_argument(
+        "--proxy-pool",
+        help="Path to the proxy pool file",
+        type=str,
     )
 
-    return parser
+    return parser.parse_args()
 
 
-def restart_job() -> None:
+def setup_environment(args: Namespace) -> None:
     """
-    This function restarts the crawler job. It deletes the
-    associated Redis keys {spider_name}:dupefilter, {spider_name}:requests,
-    and sets the {spider_name}::start_urls to the provided start_url.
+    Setup environment variables based on command line arguments.
     """
-    redis_url = os.environ["REDIS_URL"]
-    spider_name = os.environ["SPIDER_NAME"]
-    start_url = os.environ["START_URL"]
-
-    client = redis.Redis.from_url(redis_url)
-    with client.pipeline() as pipe:
-        pipe.delete(f"{spider_name}:dupefilter")
-        pipe.delete(f"{spider_name}:requests")
-        pipe.lpush(f"{spider_name}:start_urls", start_url)
-        pipe.execute()
-
-    client.close()
-
-
-if __name__ == "__main__":
-    # Load environment variables from .env file
-    load_dotenv(find_dotenv())
-
-    # Parse command line arguments
-    parser = add_cli_arguments()
-    args: Namespace = parser.parse_args()
-
-    # Set spider name
     os.environ["SPIDER_NAME"] = args.spider_name
 
-    # Set or override environment variables
     if args.use_web_cache:
         os.environ["USE_WEB_CACHE"] = str(args.use_web_cache)
     if args.follow_pagination_links:
@@ -163,15 +144,77 @@ if __name__ == "__main__":
         if args.language:
             os.environ["LANGUAGE"] = args.language
 
-        restart_job()
 
-    # Setup the Spider name
+def restart_job() -> None:
+    """
+    This function restarts the crawler job. It deletes the
+    associated Redis keys {spider_name}:dupefilter, {spider_name}:requests,
+    and sets the {spider_name}::start_urls to the provided start_url.
+    """
+    redis_url = os.environ["REDIS_URL"]
+    spider_name = os.environ["SPIDER_NAME"]
+    start_url = os.environ["START_URL"]
+
+    client = redis.Redis.from_url(redis_url)
+    with client.pipeline() as pipe:
+        pipe.delete(f"{spider_name}:dupefilter")
+        pipe.delete(f"{spider_name}:requests")
+        pipe.lpush(f"{spider_name}:start_urls", start_url)
+        pipe.execute()
+
+    client.close()
+
+
+def run_spider_with_proxy(proxy_url: str) -> None:
+    """
+    Runs a single spider with the given proxy url.
+    """
+    os.environ["PROXY_URL"] = proxy_url
+
     class NamedSpider(ServersSpider):
-        name: str = os.environ["SPIDER_NAME"]
+        name = os.environ["SPIDER_NAME"]
 
-    # Setup the CrawlerProcess
     process = CrawlerProcess(get_project_settings())
     process.crawl(NamedSpider)
-
-    # Start the crawling process
     process.start()
+
+
+def run_spiders(args: Namespace) -> None:
+    """
+    Run multiple spiders in parallel using different proxies.
+    """
+    processes = []
+    try:
+        if args.restart_job:
+            restart_job()
+
+        with open("proxies.txt", "r") as f:
+            proxy_urls = [line.strip() for line in f]
+
+        for i, proxy_url in enumerate(proxy_urls):
+            process = multiprocessing.Process(
+                target=run_spider_with_proxy, args=(proxy_url,)
+            )
+            process.start()
+            if i == 0:
+                time.sleep(60)
+            processes.append(process)
+
+        for process in processes:
+            process.join()
+
+    except KeyboardInterrupt:
+        for process in processes:
+            process.terminate()
+
+
+if __name__ == "__main__":
+    # Load environment variables from .env file
+    load_dotenv(find_dotenv())
+
+    # Parse command line arguments
+    args = add_cli_arguments()
+    setup_environment(args)
+
+    # Start the crawling processes
+    run_spiders(args)
