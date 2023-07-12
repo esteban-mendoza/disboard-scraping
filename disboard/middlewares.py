@@ -62,25 +62,34 @@ class FlareSolverrProxyMiddleware:
         new HtmlResponse object. Otherwise, the original response will be
         returned.
         """
-        processed_by_flare_solverr = request.meta.get("processed_by_flare_solverr")
-        if processed_by_flare_solverr:
-            original_request = request.meta["original_request"]
-            solution_response = json.loads(response.body).get("solution")
-            html_response = HtmlResponse(
-                url=solution_response.get("url"),
-                body=solution_response.get("response"),
-                headers=response.headers,
-                request=original_request,
-                protocol=response.protocol,
-                encoding="utf-8",
-            )
-            self.logger.log(
-                INFO,
-                f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
-            )
-            return html_response
-        else:
+        # If the request was not processed by FlareSolverr, return the original response
+        if not request.meta.get("processed_by_flare_solverr"):
             return response
+
+        if response.status != 200:
+            self.logger.log(
+                WARNING,
+                f"Non 200 response from {self.proxy_url}: <{response.status} {response.url}>",
+            )
+            return response
+
+        original_request = request.meta["original_request"]
+        solution_response = json.loads(response.body).get("solution")
+
+        html_response = HtmlResponse(
+            url=solution_response.get("url"),
+            body=solution_response.get("response"),
+            headers=response.headers,
+            request=original_request,
+            protocol=response.protocol,
+            encoding="utf-8",
+        )
+
+        self.logger.log(
+            INFO,
+            f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
+        )
+        return html_response
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()

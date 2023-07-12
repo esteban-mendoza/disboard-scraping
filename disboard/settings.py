@@ -90,7 +90,7 @@ AUTOTHROTTLE_MAX_DELAY = 60
 # each remote server
 AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 # Enable showing throttling stats for every response received:
-AUTOTHROTTLE_DEBUG = True
+AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure retry middleware
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
@@ -169,6 +169,7 @@ LANGUAGE = os.getenv("LANGUAGE", "")
 CONCURRENT_PROXY_REQUESTS = os.getenv("CONCURRENT_PROXY_REQUESTS", False)
 # URL of the FlareSolverr proxy server
 PROXY_URL = os.getenv("PROXY_URL")
+PROXY_POOL = os.getenv("PROXY_POOL", os.path.abspath("proxies.txt"))
 
 # Database settings
 # Redis database environment variables
