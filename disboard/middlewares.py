@@ -3,17 +3,19 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-import requests
+import json
 from scrapy import signals
-from scrapy.http import HtmlResponse
+from scrapy.http import HtmlResponse, Response
 from logging import getLogger, INFO, WARNING
 from twisted.internet.threads import deferToThread
 
 
 class FlareSolverrProxyMiddleware:
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the downloader middleware does not modify the
-    # passed objects.
+    """
+    This middleware uses the FlareSolverr proxy server to bypass Cloudflare's
+    anti-bot protection.
+    """
+
     logger = getLogger(__name__)
 
     @classmethod
@@ -25,61 +27,69 @@ class FlareSolverrProxyMiddleware:
 
     def process_request(self, request, spider):
         """
-        This method forwards all requests to the FlareSolverr server.
-        It awaits and returns the response from the proxy server.
-
-        If CONCURRENT_PROXY_REQUESTS is set to True, the request is
-        processed in a concurrent thread. Otherwise, the request
-        blocks the main thread and is processed synchronously.
+        This method modifies the request object to use the FlareSolverr
+        proxy server.
         """
-        if self.concurrent_proxy_requests:
-            return deferToThread(self._process_request, request, spider)
-        else:
-            return self._process_request(request, spider)
 
-    def _process_request(self, request, spider):
-        """
-        This method is called in a concurrent thread. It sends a POST
-        request to the FlareSolverr server and processes the response
-        to return a Scrapy Response object.
-        """
-        post_body = {
-            "url": request.url,
-            "cmd": "request.get",
-        }
-        headers = {"Content-Type": "application/json"}
+        # If the request is already processed by FlareSolverr, don't process it again
+        if request.meta.get("processed_by_flare_solverr"):
+            return None
 
-        response = requests.post(self.proxy_url, headers=headers, json=post_body)
-
-        if response.status_code == 200:
-            solution_response = response.json()["solution"]
-            html_response = HtmlResponse(
-                url=solution_response["url"],
-                body=solution_response["response"],
-                headers=response.headers,
-                request=request,
-                protocol=response.raw.version,
-                encoding="utf-8",
-            )
-            self.logger.log(
-                INFO,
-                f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
-            )
-            return html_response
-        else:
-            self.logger.log(
-                WARNING,
-                f"Proxy server {self.proxy_url}. URL response {request.url}: <{response.status_code} {response.reason}>",
-            )
+        new_request = request.replace(
+            url=self.proxy_url,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+            body=json.dumps(
+                {
+                    "url": request.url,
+                    "cmd": "request.get",
+                }
+            ).encode("utf-8"),
+            meta={
+                "original_request": request,
+                "dont_redirect": True,
+                "handle_httpstatus_all": True,
+                "processed_by_flare_solverr": True,
+            },
+        )
+        new_request.meta["download_slot"] = self.proxy_url
+        return new_request
 
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
+        """
+        This method processes the response from the FlareSolverr proxy server.
+        If the response is from the proxy server, it will be used to create a
+        new HtmlResponse object. Otherwise, the original response will be
+        returned.
+        """
+        # If the request was not processed by FlareSolverr, return the original response
+        if not request.meta.get("processed_by_flare_solverr"):
+            return response
 
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
-        return response
+        if response.status != 200:
+            self.logger.log(
+                WARNING,
+                f"Non 200 response from {self.proxy_url}: <{response.status} {response.url}>",
+            )
+            return response
+
+        original_request = request.meta["original_request"]
+        solution_response = json.loads(response.body).get("solution")
+
+        html_response = HtmlResponse(
+            url=solution_response.get("url"),
+            body=solution_response.get("response"),
+            headers=response.headers,
+            request=original_request,
+            protocol=response.protocol,
+            encoding="utf-8",
+        )
+
+        self.logger.log(
+            INFO,
+            f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
+        )
+        return html_response
 
     def process_exception(self, request, exception, spider):
         # Called when a download handler or a process_request()
@@ -93,7 +103,4 @@ class FlareSolverrProxyMiddleware:
 
     def spider_opened(self, spider):
         self.proxy_url = spider.settings.get("PROXY_URL")
-        self.concurrent_proxy_requests = spider.settings.get(
-            "CONCURRENT_PROXY_REQUESTS"
-        )
         spider.logger.info("Spider opened: %s" % spider.name)

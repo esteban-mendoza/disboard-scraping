@@ -1,6 +1,9 @@
+logs
 venv
 __pycache__
+.pytest_cache
 *.env
 *.jsonl
 *.log
-.pytest_cache
+proxy_pool.*
+proxies.*
