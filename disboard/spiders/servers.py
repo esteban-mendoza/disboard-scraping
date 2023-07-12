@@ -12,8 +12,11 @@ from disboard.commons.helpers import (
     request_all_tag_urls,
     request_all_category_urls,
 )
+from disboard.items import DisboardServerItem
 from logging import getLogger, INFO
+from scrapy.http import Request
 from scrapy_redis.spiders import RedisSpider
+from typing import Generator, Union
 
 
 class ServersSpider(RedisSpider):
@@ -32,21 +35,23 @@ class ServersSpider(RedisSpider):
     max_idle_time: float = 7
 
     @property
-    def page_iterator_prefix(self):
+    def page_iterator_prefix(self) -> str:
         if self.settings.get("USE_WEB_CACHE"):
             return WEBCACHE_URL
         else:
             return ""
 
     @property
-    def language_postfix(self):
+    def language_postfix(self) -> str:
         language = self.settings.get("LANGUAGE")
         if language == "":
             return ""
         else:
             return f"?fl={language}"
 
-    def parse(self, response):
+    def parse(
+        self, response
+    ) -> Generator[Union[DisboardServerItem, Request], None, None]:
         """
         Parse the response and extract DisboardServerItems.
         Follow the pagination links to request the next page.
