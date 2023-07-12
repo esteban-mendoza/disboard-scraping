@@ -13,8 +13,8 @@ from disboard.commons.helpers import (
     request_all_category_urls,
 )
 from disboard.items import DisboardServerItem
-from logging import getLogger, INFO
-from scrapy.http import Request
+from logging import getLogger, DEBUG, WARNING
+from scrapy.http import Request, Response
 from scrapy_redis.spiders import RedisSpider
 from typing import Generator, Union
 
@@ -50,7 +50,7 @@ class ServersSpider(RedisSpider):
             return f"?fl={language}"
 
     def parse(
-        self, response
+        self, response: Response
     ) -> Generator[Union[DisboardServerItem, Request], None, None]:
         """
         Parse the response and extract DisboardServerItems.
@@ -58,22 +58,47 @@ class ServersSpider(RedisSpider):
 
         If no DisboardServerItems are found, stops parsing the response.
         """
-        n_of_server_items = count_disboard_server_items(response)
+        try:
+            n_of_server_items = count_disboard_server_items(response)
+            self._log_disboard_server_items(n_of_server_items, response)
 
+            if n_of_server_items > 0:
+                yield from extract_disboard_server_items(response)
+                yield from self._handle_pagination_links(n_of_server_items, response)
+                yield from self._handle_category_links(response)
+                yield from self._handle_tag_links(n_of_server_items, response)
+
+        except ValueError:
+            self._log_disboard_server_items(0, response, WARNING)
+
+    def _log_disboard_server_items(
+        self, n_of_server_items: int, response: Response, log_level: int = DEBUG
+    ) -> None:
         self.logger.log(
-            INFO, f"Found {n_of_server_items} DisboardServerItems in {response.url}"
+            log_level,
+            f"Found {n_of_server_items} DisboardServerItems in {response.url}",
         )
+        if n_of_server_items == 0:
+            self.logger.log(DEBUG, f"Response body: {response.body}")
 
-        if n_of_server_items > 0:
-            yield from extract_disboard_server_items(response)
+    def _handle_pagination_links(
+        self, n_of_server_items: int, response: Response
+    ) -> Generator[DisboardServerItem, None, None]:
+        if (
+            n_of_server_items >= 12
+            and has_pagination_links(response)
+            and self.settings.get("FOLLOW_PAGINATION_LINKS")
+        ):
+            yield from request_next_url(self, response)
 
-            if n_of_server_items >= 12 and has_pagination_links(response):
-                if self.settings.get("FOLLOW_PAGINATION_LINKS"):
-                    yield from request_next_url(self, response)
+    def _handle_category_links(
+        self, response: Response
+    ) -> Generator[DisboardServerItem, None, None]:
+        if self.settings.get("FOLLOW_CATEGORY_LINKS"):
+            yield from request_all_category_urls(self, response)
 
-            if self.settings.get("FOLLOW_CATEGORY_LINKS"):
-                yield from request_all_category_urls(self, response)
-
-            if n_of_server_items >= 8:
-                if self.settings.get("FOLLOW_TAG_LINKS"):
-                    yield from request_all_tag_urls(self, response)
+    def _handle_tag_links(
+        self, n_of_server_items: int, response: Response
+    ) -> Generator[DisboardServerItem, None, None]:
+        if n_of_server_items >= 8 and self.settings.get("FOLLOW_TAG_LINKS"):
+            yield from request_all_tag_urls(self, response)
