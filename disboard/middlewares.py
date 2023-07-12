@@ -6,7 +6,7 @@
 import json
 from scrapy import signals
 from scrapy.http import HtmlResponse, Response
-from logging import getLogger, INFO, WARNING
+from logging import getLogger, DEBUG, WARNING
 from twisted.internet.threads import deferToThread
 
 
@@ -86,7 +86,7 @@ class FlareSolverrProxyMiddleware:
         )
 
         self.logger.log(
-            INFO,
+            DEBUG,
             f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
         )
         return html_response
