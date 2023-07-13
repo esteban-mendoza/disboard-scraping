@@ -1,3 +1,5 @@
+#!/usr/bin/ python3
+
 """
 This is the main entry point of the application.
 
@@ -12,9 +14,11 @@ the default settings by passing command line arguments.
 """
 import multiprocessing
 import os
+import sys
 import redis
 import time
 
+from datetime import datetime
 from argparse import ArgumentParser, Namespace
 from dotenv import load_dotenv, find_dotenv
 from scrapy.crawler import CrawlerProcess
@@ -34,6 +38,12 @@ def add_cli_arguments() -> Namespace:
             used as the Redis' keys for queueing and filtering requests.\n\
             This name allows you to run multiple spiders with different settings \
             at the same time.",
+        type=str,
+        required=True,
+    )
+    parser.add_argument(
+        "--language",
+        help="The language to filter all requests by",
         type=str,
         required=True,
     )
@@ -90,11 +100,6 @@ def add_cli_arguments() -> Namespace:
         type=str,
     )
     parser.add_argument(
-        "--language",
-        help="The language to filter all requests by",
-        type=str,
-    )
-    parser.add_argument(
         "--log-file",
         help="The file to write logs to",
         type=str,
@@ -119,6 +124,7 @@ def setup_environment(args: Namespace) -> None:
     Setup environment variables based on command line arguments.
     """
     os.environ["SPIDER_NAME"] = args.spider_name
+    os.environ["LANGUAGE"] = args.language
 
     if args.use_web_cache:
         os.environ["USE_WEB_CACHE"] = str(args.use_web_cache)
@@ -136,13 +142,12 @@ def setup_environment(args: Namespace) -> None:
         os.environ["REDIS_URL"] = args.redis_url
     if args.db_url:
         os.environ["DB_URL"] = args.db_url
+    if args.start_url:
+        os.environ["START_URL"] = args.start_url
     if args.restart_job:
-        if args.start_url:
-            os.environ["START_URL"] = args.start_url
-        else:
+        os.environ["RESTART_JOB"] = str(args.restart_job)
+        if not args.start_url:
             raise ValueError("--start-url is required when --restart-job is provided")
-        if args.language:
-            os.environ["LANGUAGE"] = args.language
 
 
 def restart_job() -> None:
@@ -179,15 +184,13 @@ def run_spider_with_proxy(proxy_url: str) -> None:
     process.start()
 
 
-def run_spiders(args: Namespace) -> None:
+def run_spiders() -> list:
     """
     Run multiple spiders in parallel using different proxies.
     """
     processes = []
-    try:
-        if args.restart_job:
-            restart_job()
 
+    try:
         with open("proxies.txt", "r") as f:
             proxy_urls = [line.strip() for line in f]
 
@@ -197,24 +200,59 @@ def run_spiders(args: Namespace) -> None:
             )
             process.start()
             if i == 0:
-                time.sleep(60)
+                wait_time = 40
+                print(f"[{datetime.now()}] Waiting {wait_time} seconds for the first spider...")
+                time.sleep(wait_time)
             processes.append(process)
 
-        for process in processes:
-            process.join()
-
+        return processes
     except KeyboardInterrupt:
         for process in processes:
             process.terminate()
+        sys.exit(0)
+
+
+def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
+    """
+    This function will run the spiders during the execution_time (in seconds),
+    wait for wait_time (in seconds), and then repeat the process.
+
+    If the environment variable RESTART_JOB is set to True, the job will be
+    restarted before running the spiders.
+    """
+    try:
+        if os.environ.get("RESTART_JOB", "False") == "True":
+            print("Restarting job...")
+            restart_job()
+            os.environ["RESTART_JOB"] = "False"
+
+        while True:
+            processes = run_spiders()
+            print(f"[{datetime.now()}] Running {len(processes)} spiders...")
+
+            print(f"[{datetime.now()}] Waiting {execution_time} seconds...")
+            time.sleep(execution_time)
+
+            for process in processes:
+                process.terminate()
+
+            print(f"[{datetime.now()}] Spider execution finished. Waiting {wait_time} seconds...")
+            time.sleep(wait_time)
+    except KeyboardInterrupt:
+        sys.exit(0)
 
 
 if __name__ == "__main__":
+
     # Load environment variables from .env file
     load_dotenv(find_dotenv())
+    print(f"[{datetime.now()}] Loaded environment variables from .env file")
 
     # Parse command line arguments
     args = add_cli_arguments()
     setup_environment(args)
+    print(f"[{datetime.now()}] Parsed command line arguments")
 
     # Start the crawling processes
-    run_spiders(args)
+    print(f"[{datetime.now()}] Starting crawling processes...")
+    run_scheduled_spiders(60 * 60 * 1.5, 60 * 8)

@@ -13,7 +13,7 @@ from disboard.commons.helpers import (
     request_all_category_urls,
 )
 from disboard.items import DisboardServerItem
-from logging import getLogger, DEBUG, WARNING
+from logging import getLogger, INFO, DEBUG, WARNING
 from scrapy.http import Request, Response
 from scrapy_redis.spiders import RedisSpider
 from typing import Generator, Union
@@ -49,6 +49,11 @@ class ServersSpider(RedisSpider):
         else:
             return f"?fl={language}"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        scraper_logger = getLogger("scrapy.core.scraper")
+        scraper_logger.setLevel(INFO)
+
     def parse(
         self, response: Response
     ) -> Generator[Union[DisboardServerItem, Request], None, None]:
@@ -79,7 +84,7 @@ class ServersSpider(RedisSpider):
             f"Found {n_of_server_items} DisboardServerItems in {response.url}",
         )
         if n_of_server_items == 0:
-            self.logger.log(DEBUG, f"Response body: {response.body}")
+            self.logger.debug(f"Response body: {response.body}")
 
     def _handle_pagination_links(
         self, n_of_server_items: int, response: Response
@@ -100,5 +105,5 @@ class ServersSpider(RedisSpider):
     def _handle_tag_links(
         self, n_of_server_items: int, response: Response
     ) -> Generator[DisboardServerItem, None, None]:
-        if n_of_server_items >= 8 and self.settings.get("FOLLOW_TAG_LINKS"):
+        if n_of_server_items >= 4 and self.settings.get("FOLLOW_TAG_LINKS"):
             yield from request_all_tag_urls(self, response)

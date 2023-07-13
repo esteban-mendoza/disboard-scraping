@@ -67,8 +67,7 @@ class FlareSolverrProxyMiddleware:
             return response
 
         if response.status != 200:
-            self.logger.log(
-                WARNING,
+            self.logger.warning(
                 f"Non 200 response from {self.proxy_url}: <{response.status} {response.url}>",
             )
             return response
@@ -85,8 +84,7 @@ class FlareSolverrProxyMiddleware:
             encoding="utf-8",
         )
 
-        self.logger.log(
-            DEBUG,
+        self.logger.debug(
             f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
         )
         return html_response

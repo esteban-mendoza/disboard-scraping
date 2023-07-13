@@ -2,6 +2,7 @@ logs
 venv
 __pycache__
 .pytest_cache
+.vscode
 *.env
 *.jsonl
 *.log
