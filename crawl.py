@@ -201,7 +201,9 @@ def run_spiders() -> list:
             process.start()
             if i == 0:
                 wait_time = 40
-                print(f"[{datetime.now()}] Waiting {wait_time} seconds for the first spider...")
+                print(
+                    f"[{datetime.now()}] Waiting {wait_time} seconds for the first spider..."
+                )
                 time.sleep(wait_time)
             processes.append(process)
 
@@ -236,14 +238,15 @@ def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
             for process in processes:
                 process.terminate()
 
-            print(f"[{datetime.now()}] Spider execution finished. Waiting {wait_time} seconds...")
+            print(
+                f"[{datetime.now()}] Spider execution finished. Waiting {wait_time} seconds..."
+            )
             time.sleep(wait_time)
     except KeyboardInterrupt:
         sys.exit(0)
 
 
 if __name__ == "__main__":
-
     # Load environment variables from .env file
     load_dotenv(find_dotenv())
     print(f"[{datetime.now()}] Loaded environment variables from .env file")
@@ -255,4 +258,4 @@ if __name__ == "__main__":
 
     # Start the crawling processes
     print(f"[{datetime.now()}] Starting crawling processes...")
-    run_scheduled_spiders(60 * 60 * 1.5, 60 * 8)
+    run_scheduled_spiders(60 * 60 * 1.5, 60 * 15)

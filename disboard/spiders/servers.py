@@ -89,6 +89,14 @@ class ServersSpider(RedisSpider):
     def _handle_pagination_links(
         self, n_of_server_items: int, response: Response
     ) -> Generator[DisboardServerItem, None, None]:
+        """
+        If there are more than 12 DisboardServerItems in the response,
+        and the response has pagination links, and the spider is configured
+        to follow pagination links, request the next page.
+
+        When the response has less than 12 DisboardServerItems,
+        the next page will probably have 0 DisboardServerItems.
+        """
         if (
             n_of_server_items >= 12
             and has_pagination_links(response)
@@ -99,11 +107,23 @@ class ServersSpider(RedisSpider):
     def _handle_category_links(
         self, response: Response
     ) -> Generator[DisboardServerItem, None, None]:
+        """
+        If the spider is configured to follow category links,
+        request all category links in the response.
+        """
         if self.settings.get("FOLLOW_CATEGORY_LINKS"):
             yield from request_all_category_urls(self, response)
 
     def _handle_tag_links(
         self, n_of_server_items: int, response: Response
     ) -> Generator[DisboardServerItem, None, None]:
-        if n_of_server_items >= 4 and self.settings.get("FOLLOW_TAG_LINKS"):
+        """
+        If there are more than 2 DisboardServerItems in the response,
+        and the spider is configured to follow tag links,
+        request all tag links in the response.
+
+        This is done to avoid requesting tag links with servers
+        that we already have in the database.
+        """
+        if n_of_server_items >= 2 and self.settings.get("FOLLOW_TAG_LINKS"):
             yield from request_all_tag_urls(self, response)

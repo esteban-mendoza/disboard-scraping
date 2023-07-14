@@ -5,9 +5,9 @@
 
 import json
 from scrapy import signals
-from scrapy.http import HtmlResponse, Response
-from logging import getLogger, DEBUG, WARNING
-from twisted.internet.threads import deferToThread
+from scrapy.exceptions import IgnoreRequest
+from scrapy.http import HtmlResponse
+from logging import getLogger
 
 
 class FlareSolverrProxyMiddleware:
@@ -31,8 +31,8 @@ class FlareSolverrProxyMiddleware:
         proxy server.
         """
 
-        # If the request is already processed by FlareSolverr, don't process it again
-        if request.meta.get("processed_by_flare_solverr"):
+        # If the request was redirected to FlareSolverr, don't process it again
+        if request.meta.get("redirected_to_flare_solverr"):
             return None
 
         new_request = request.replace(
@@ -49,7 +49,7 @@ class FlareSolverrProxyMiddleware:
                 "original_request": request,
                 "dont_redirect": True,
                 "handle_httpstatus_all": True,
-                "processed_by_flare_solverr": True,
+                "redirected_to_flare_solverr": True,
             },
         )
         new_request.meta["download_slot"] = self.proxy_url
@@ -61,19 +61,58 @@ class FlareSolverrProxyMiddleware:
         If the response is from the proxy server, it will be used to create a
         new HtmlResponse object. Otherwise, the original response will be
         returned.
+
+        If the response from FlareSolverr is not a 200, the request will be
+        retried up to retry_times times if the HTTP status code is in the
+        retry_http_codes list in the settings.py file.
         """
-        # If the request was not processed by FlareSolverr, return the original response
-        if not request.meta.get("processed_by_flare_solverr"):
+        # If the request was not redirected to FlareSolverr, return the original response
+        if not request.meta.get("redirected_to_flare_solverr"):
             return response
 
+        # If the response from FlareSolverr is not a 200, log a warning
         if response.status != 200:
-            self.logger.warning(
-                f"Non 200 response from {self.proxy_url}: <{response.status} {response.url}>",
-            )
-            return response
+            self.logger.warning(f"Non 200 response: <{response.status} {response.url}>")
 
+        # If the HTTP status code is in the retry_http_codes list, retry the request
+        # up to retry_times times
         original_request = request.meta["original_request"]
-        solution_response = json.loads(response.body).get("solution")
+        retry_count = original_request.meta.get("flaresolverr_retry_count", 0)
+
+        if response.status in self.retry_http_codes and retry_count < self.retry_times:
+            updated_meta = original_request.meta.copy()
+            updated_meta["flaresolverr_retry_count"] = retry_count + 1
+            original_request = original_request.replace(meta=updated_meta)
+
+            self.logger.debug(
+                f"Retrying request. Retry count: {retry_count + 1}: <{response.status} {original_request.url}>"
+            )
+            return original_request
+
+        # If the HTTP status code is not 200 and is not in the retry_http_codes
+        # list or the request has been retried retry_times times, log an error
+        # and raise an IgnoreRequest exception
+        if (
+            response.status != 200 and response.status not in self.retry_http_codes
+        ) or retry_count >= self.retry_times:
+            self.logger.error(
+                f"Request failed after {retry_count} retries: <{response.status} {original_request.url}>"
+            )
+            self.logger.debug(f"Response body: {response.status} {response.body}")
+            raise IgnoreRequest(
+                f"Request failed after {retry_count} retries: <{response.status} {original_request.url}>"
+            )
+
+        try:
+            solution_response = json.loads(response.body).get("solution")
+        except json.JSONDecodeError:
+            self.logger.error(
+                f"Failed to parse JSON response: <{response.status} {response.url}>"
+            )
+            self.logger.debug(f"Response body: {response.body}")
+            raise IgnoreRequest(
+                f"Failed to parse JSON response: <{response.status} {response.url}>"
+            )
 
         html_response = HtmlResponse(
             url=solution_response.get("url"),
@@ -101,4 +140,6 @@ class FlareSolverrProxyMiddleware:
 
     def spider_opened(self, spider):
         self.proxy_url = spider.settings.get("PROXY_URL")
+        self.retry_http_codes = spider.settings.get("RETRY_HTTP_CODES")
+        self.retry_times = spider.settings.get("RETRY_TIMES")
         spider.logger.info("Spider opened: %s" % spider.name)

@@ -54,7 +54,7 @@ DOWNLOAD_DELAY = 7
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
-    "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
+    #    "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
 }
 
 # Enable or disable extensions
@@ -88,15 +88,15 @@ AUTOTHROTTLE_START_DELAY = 7
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 0.75
+AUTOTHROTTLE_TARGET_CONCURRENCY = 0.8
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure retry middleware
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
-RETRY_ENABLED = True
+RETRY_ENABLED = False
 # Maximum number of times to retry, in addition to the first download.
-RETRY_TIMES = 1.5
+RETRY_TIMES = 2
 # Which HTTP response codes to retry.
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 404, 408, 429]
 
@@ -122,7 +122,7 @@ import logging
 
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # Log level to use (defaults to DEBUG)
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 # File name to use for logging output. If None, standard error will be used.
 LOG_FILE = os.getenv("LOG_FILE", "scrapy.log")
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
