@@ -21,6 +21,19 @@ def spider_mock():
 
 
 @pytest.fixture
+def blocked_response():
+    blocked_site_path = os.path.abspath("tests/sample_files/access_denied.html")
+    with open(blocked_site_path, "r") as f:
+        html = f.read()
+    return HtmlResponse(
+        url="https://disboard.org/servers?fl=de",
+        headers={"Date": b"Mon, 10 Jul 2023 21:57:03 GMT"},
+        body=html,
+        encoding="utf-8",
+    )
+
+
+@pytest.fixture
 def sample_response():
     example_site_path = os.path.abspath(
         "tests/sample_files/disboard.org_servers_fl=de.html"

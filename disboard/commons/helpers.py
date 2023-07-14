@@ -5,6 +5,18 @@ from typing import Generator
 from urllib.parse import urljoin
 
 
+def blocked_by_cloudflare(response: Response) -> bool:
+    """
+    Given a response from a Disboard server list page, returns True if
+    the response is blocked by Cloudflare, False otherwise.
+    """
+    title = response.css("title::text").get()
+    if title == "Access denied | disboard.org used Cloudflare to restrict access":
+        return True
+    else:
+        return False
+
+
 def count_disboard_server_items(response: Response) -> int:
     """
     Given a response from a Disboard server list page, returns the number

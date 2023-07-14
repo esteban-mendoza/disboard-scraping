@@ -224,7 +224,7 @@ def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
     """
     try:
         if os.environ.get("RESTART_JOB", "False") == "True":
-            print("Restarting job...")
+            print(f"[{datetime.now()}] Restarting job...")
             restart_job()
             os.environ["RESTART_JOB"] = "False"
 

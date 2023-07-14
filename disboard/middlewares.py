@@ -6,7 +6,7 @@
 import json
 from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
-from scrapy.http import HtmlResponse
+from scrapy.http import HtmlResponse, Request
 from logging import getLogger
 
 
@@ -48,6 +48,7 @@ class FlareSolverrProxyMiddleware:
             meta={
                 "original_request": request,
                 "dont_redirect": True,
+                "dont_filter": True,
                 "handle_httpstatus_all": True,
                 "redirected_to_flare_solverr": True,
             },
@@ -81,7 +82,13 @@ class FlareSolverrProxyMiddleware:
 
         if response.status in self.retry_http_codes and retry_count < self.retry_times:
             updated_meta = original_request.meta.copy()
-            updated_meta["flaresolverr_retry_count"] = retry_count + 1
+            updated_meta.update(
+                {
+                    "dont_filter": True,
+                    "redirected_to_flare_solverr": False,
+                    "flaresolverr_retry_count": retry_count + 1,
+                }
+            )
             original_request = original_request.replace(meta=updated_meta)
 
             self.logger.debug(

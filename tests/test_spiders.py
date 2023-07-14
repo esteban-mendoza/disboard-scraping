@@ -1,7 +1,7 @@
 from disboard.spiders.servers import ServersSpider
 
 
-def test_parse(settings, sample_response):
+def test_parse(settings, sample_response, blocked_response):
     # Create an instance of the spider
     spider = ServersSpider()
     spider.settings = settings

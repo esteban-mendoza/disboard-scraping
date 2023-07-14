@@ -1,5 +1,6 @@
 from .conftest import spider_mock
 from disboard.commons.helpers import (
+    blocked_by_cloudflare,
     count_disboard_server_items,
     has_pagination_links,
     extract_disboard_server_items,
@@ -8,6 +9,10 @@ from disboard.commons.helpers import (
     request_all_tag_urls,
 )
 from disboard.items import DisboardServerItem
+
+
+def test_blocked_by_cloudflare(blocked_response):
+    assert blocked_by_cloudflare(blocked_response)
 
 
 def test_count_disboard_server_items(sample_response):

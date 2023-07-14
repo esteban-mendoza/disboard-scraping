@@ -5,6 +5,7 @@ starting from the /servers endpoint.
 
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 from disboard.commons.helpers import (
+    blocked_by_cloudflare,
     count_disboard_server_items,
     has_pagination_links,
     extract_disboard_server_items,
@@ -67,6 +68,9 @@ class ServersSpider(RedisSpider):
             n_of_server_items = count_disboard_server_items(response)
             self._log_disboard_server_items(n_of_server_items, response)
 
+            if n_of_server_items == 0:
+                yield from self._handle_0_server_items(response)
+
             if n_of_server_items > 0:
                 yield from extract_disboard_server_items(response)
                 yield from self._handle_pagination_links(n_of_server_items, response)
@@ -75,6 +79,20 @@ class ServersSpider(RedisSpider):
 
         except ValueError:
             self._log_disboard_server_items(0, response, WARNING)
+
+    def _handle_0_server_items(
+        self, response: Response
+    ) -> Generator[Request, None, None]:
+        """
+        If the response has been blocked by Cloudflare,
+        request the same URL again.
+        """
+        if blocked_by_cloudflare(response):
+            self.logger.warning(f"Blocked by Cloudflare: <{response.status} {response.url}>")
+            self.logger.debug(f"Retrying: {response.url}")
+            request = response.request
+            request.meta["dont_filter"] = True
+            yield request
 
     def _log_disboard_server_items(
         self, n_of_server_items: int, response: Response, log_level: int = DEBUG
@@ -88,7 +106,7 @@ class ServersSpider(RedisSpider):
 
     def _handle_pagination_links(
         self, n_of_server_items: int, response: Response
-    ) -> Generator[DisboardServerItem, None, None]:
+    ) -> Generator[Request, None, None]:
         """
         If there are more than 12 DisboardServerItems in the response,
         and the response has pagination links, and the spider is configured
@@ -106,7 +124,7 @@ class ServersSpider(RedisSpider):
 
     def _handle_category_links(
         self, response: Response
-    ) -> Generator[DisboardServerItem, None, None]:
+    ) -> Generator[Request, None, None]:
         """
         If the spider is configured to follow category links,
         request all category links in the response.
@@ -116,7 +134,7 @@ class ServersSpider(RedisSpider):
 
     def _handle_tag_links(
         self, n_of_server_items: int, response: Response
-    ) -> Generator[DisboardServerItem, None, None]:
+    ) -> Generator[Request, None, None]:
         """
         If there are more than 2 DisboardServerItems in the response,
         and the spider is configured to follow tag links,
