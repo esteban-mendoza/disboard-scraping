@@ -199,13 +199,13 @@ def run_spiders() -> list:
                 target=run_spider_with_proxy, args=(proxy_url,)
             )
             process.start()
+            processes.append(process)
             if i == 0:
                 wait_time = 40
                 print(
                     f"[{datetime.now()}] Waiting {wait_time} seconds for the first spider..."
                 )
                 time.sleep(wait_time)
-            processes.append(process)
 
         return processes
     except KeyboardInterrupt:
