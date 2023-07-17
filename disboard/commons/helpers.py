@@ -57,7 +57,7 @@ def extract_disboard_server_items(
     server_info_selectorlist = response.css(".server-info")
     server_body_selectorlist = response.css(".server-body")
 
-    response_date = response.headers["Date"].decode()
+    response_date = response.headers.get("Date").decode()
     scrape_time = datetime.strptime(
         response_date, "%a, %d %b %Y %H:%M:%S %Z"
     ).timestamp()
@@ -120,8 +120,8 @@ def request_all_category_urls(
     """
     n_of_servers = count_disboard_server_items(response)
     category_urls = response.css(".category::attr(href)").getall()
-    for category_url in category_urls:
-        category_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, category_url)}{self.language_postfix}"
+    for category_url in list(dict.fromkeys(category_urls)):
+        category_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, category_url)}{self.flags_postfix}"
         yield Request(url=category_url, priority=n_of_servers + 25)
 
 
@@ -137,6 +137,6 @@ def request_all_tag_urls(self, response: Response) -> Generator[Request, None, N
     """
     n_of_servers = count_disboard_server_items(response)
     tag_urls = response.css(".tag::attr(href)").getall()
-    for tag_url in tag_urls:
-        tag_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, tag_url)}{self.language_postfix}"
+    for tag_url in list(dict.fromkeys(tag_urls)):
+        tag_url = f"{self.page_iterator_prefix}{urljoin(self.base_url, tag_url)}{self.flags_postfix}"
         yield Request(url=tag_url, priority=n_of_servers + 1)

@@ -55,7 +55,7 @@ def test_request_all_category_urls(spider_mock, sample_response):
 
 def test_request_all_tag_urls(spider_mock, sample_response):
     requests = list(request_all_tag_urls(spider_mock, sample_response))
-    assert len(requests) == 207
+    assert len(requests) == 140
     assert requests[0].url == "https://disboard.org/servers/tag/community?fl=de"
     assert requests[0].priority == 22 + 1
     assert requests[1].url == "https://disboard.org/servers/tag/gaming?fl=de"
