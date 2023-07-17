@@ -54,7 +54,7 @@ DOWNLOAD_DELAY = 7
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
-    #    "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
 }
 
 # Enable or disable extensions
@@ -88,7 +88,7 @@ AUTOTHROTTLE_START_DELAY = 7
 AUTOTHROTTLE_MAX_DELAY = 60
 # The average number of requests Scrapy should be sending in parallel to
 # each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 0.8
+AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 # Enable showing throttling stats for every response received:
 AUTOTHROTTLE_DEBUG = False
 
@@ -122,7 +122,7 @@ import logging
 
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # Log level to use (defaults to DEBUG)
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 # File name to use for logging output. If None, standard error will be used.
 LOG_FILE = os.getenv("LOG_FILE", "scrapy.log")
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
@@ -144,6 +144,8 @@ LOG_STDOUT = True
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 # Ensure all spiders share same duplicates filter through redis
 DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+# If True, it will show information about duplicate filters
+DUPEFILTER_DEBUG = False
 # Scheduler queue class:
 # - Use LifoQueue to process requests in Depth-first order
 # - Use FifoQueue to process requests in Breadth-first order
@@ -156,20 +158,20 @@ SCHEDULER_PERSIST = True
 # Sensible settings must be stored in environment variables
 
 # If True, the crawler will use Google's web cache to get the HTML of the page
-USE_WEB_CACHE = os.getenv("USE_WEB_CACHE", False)
+USE_WEB_CACHE = os.getenv("USE_WEB_CACHE")
 # If True, the crawler will follow pagination links
-FOLLOW_PAGINATION_LINKS = os.getenv("FOLLOW_PAGINATION_LINKS", True)
+FOLLOW_PAGINATION_LINKS = os.getenv("FOLLOW_PAGINATION_LINKS")
 # If True, the crawler will follow category links
-FOLLOW_CATEGORY_LINKS = os.getenv("FOLLOW_CATEGORY_LINKS", True)
+FOLLOW_CATEGORY_LINKS = os.getenv("FOLLOW_CATEGORY_LINKS")
 # If True, the crawler will follow tag links
-FOLLOW_TAG_LINKS = os.getenv("FOLLOW_TAG_LINKS", True)
+FOLLOW_TAG_LINKS = os.getenv("FOLLOW_TAG_LINKS")
+# If True, we will sort the results by member count
+# If False, we will sort the results by "recently bumped" (default)
+SORT_BY_MEMBER_COUNT = os.getenv("SORT_BY_MEMBER_COUNT")
 # The language to filter all requests by
 LANGUAGE = os.getenv("LANGUAGE", "")
-# If True, the crawler will perform concurrent requests to the proxy server
-CONCURRENT_PROXY_REQUESTS = os.getenv("CONCURRENT_PROXY_REQUESTS", False)
 # URL of the FlareSolverr proxy server
 PROXY_URL = os.getenv("PROXY_URL")
-PROXY_POOL = os.getenv("PROXY_POOL", os.path.abspath("proxies.txt"))
 
 # Database settings
 # Redis database environment variables
