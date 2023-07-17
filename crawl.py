@@ -31,6 +31,7 @@ def add_cli_arguments() -> Namespace:
     parser = ArgumentParser(description="Scrape Disboard.org")
 
     parser.add_argument(
+        "-n",
         "--spider-name",
         help="The name of the spider. Note that this name will also be \
             used as the Redis' keys for queueing and filtering requests.\n\
@@ -40,36 +41,42 @@ def add_cli_arguments() -> Namespace:
         required=True,
     )
     parser.add_argument(
+        "-l",
         "--language",
         help="The language to filter all requests by",
         type=str,
         required=True,
     )
     parser.add_argument(
+        "-w",
         "--use-web-cache",
         help="Use Google's web cache to get the HTML of the page",
         action="store_true",
         default=False,
     )
     parser.add_argument(
+        "-npl",
         "--dont-follow-pagination-links",
         help="Deactivate following pagination links (the default behavior)",
         action="store_true",
         default=False,
     )
     parser.add_argument(
+        "-ncl",
         "--dont-follow-category-links",
         help="Deactivate following category links (the default behavior)",
         action="store_true",
         default=False,
     )
     parser.add_argument(
+        "-ntl",
         "--dont-follow-tag-links",
         help="Deactivate following tag links (the default behavior)",
         action="store_true",
         default=False,
     )
     parser.add_argument(
+        "-m",
         "--sort-by-member-count",
         help="Sort servers by member count. If this flag is not set, \
             servers will be sorted by 'recently bumped'.",
@@ -77,16 +84,19 @@ def add_cli_arguments() -> Namespace:
         default=False,
     )
     parser.add_argument(
+        "-redis",
         "--redis-url",
         help="Redis database URL",
         type=str,
     )
     parser.add_argument(
+        "-db",
         "--db-url",
         help="Database URL",
         type=str,
     )
     parser.add_argument(
+        "-r",
         "--restart-job",
         help="Clear the Redis queue and starts the job from the beginning \
             using the provided --start-url and --language",
@@ -94,17 +104,13 @@ def add_cli_arguments() -> Namespace:
         default=False,
     )
     parser.add_argument(
+        "-url",
         "--start-url",
         help="The URL to start scraping from",
         type=str,
     )
     parser.add_argument(
-        "--log-file",
-        help="The file to write logs to",
-        type=str,
-        default="scrapy.log",
-    )
-    parser.add_argument(
+        "-proxy",
         "--proxy-url",
         help="URL of the FlareSolverr proxy server",
         type=str,
