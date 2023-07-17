@@ -1,5 +1,3 @@
-#!/usr/bin/ python3
-
 """
 This is the main entry point of the application.
 
@@ -54,26 +52,27 @@ def add_cli_arguments() -> Namespace:
         default=False,
     )
     parser.add_argument(
-        "--follow-pagination-links",
-        help="Follow pagination links",
+        "--dont-follow-pagination-links",
+        help="Deactivate following pagination links (the default behavior)",
         action="store_true",
-        default=True,
+        default=False,
     )
     parser.add_argument(
-        "--follow-category-links",
-        help="Follow category links",
+        "--dont-follow-category-links",
+        help="Deactivate following category links (the default behavior)",
         action="store_true",
-        default=True,
+        default=False,
     )
     parser.add_argument(
-        "--follow-tag-links",
-        help="Follow tag links",
+        "--dont-follow-tag-links",
+        help="Deactivate following tag links (the default behavior)",
         action="store_true",
-        default=True,
+        default=False,
     )
     parser.add_argument(
-        "--concurrent-proxy-requests",
-        help="Perform concurrent requests to the proxy server",
+        "--sort-by-member-count",
+        help="Sort servers by member count. If this flag is not set, \
+            servers will be sorted by 'recently bumped'.",
         action="store_true",
         default=False,
     )
@@ -126,16 +125,11 @@ def setup_environment(args: Namespace) -> None:
     os.environ["SPIDER_NAME"] = args.spider_name
     os.environ["LANGUAGE"] = args.language
 
-    if args.use_web_cache:
-        os.environ["USE_WEB_CACHE"] = str(args.use_web_cache)
-    if args.follow_pagination_links:
-        os.environ["FOLLOW_PAGINATION_LINKS"] = str(args.follow_pagination_links)
-    if args.follow_category_links:
-        os.environ["FOLLOW_CATEGORY_LINKS"] = str(args.follow_category_links)
-    if args.follow_tag_links:
-        os.environ["FOLLOW_TAG_LINKS"] = str(args.follow_tag_links)
-    if args.concurrent_proxy_requests:
-        os.environ["CONCURRENT_PROXY_REQUESTS"] = str(args.concurrent_proxy_requests)
+    os.environ["USE_WEB_CACHE"] = str(args.use_web_cache)
+    os.environ["FOLLOW_PAGINATION_LINKS"] = str(args.dont_follow_pagination_links)
+    os.environ["FOLLOW_CATEGORY_LINKS"] = str(args.dont_follow_category_links)
+    os.environ["FOLLOW_TAG_LINKS"] = str(args.dont_follow_tag_links)
+    os.environ["SORT_BY_MEMBER_COUNT"] = str(args.sort_by_member_count)
     if args.proxy_url:
         os.environ["PROXY_URL"] = args.proxy_url
     if args.redis_url:
@@ -237,7 +231,7 @@ def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
     restarted before running the spiders.
     """
     try:
-        if os.environ.get("RESTART_JOB", "False") == "True":
+        if os.getenv("RESTART_JOB", False):
             print(f"[{datetime.now()}] Restarting job...")
             restart_job()
             os.environ["RESTART_JOB"] = "False"
@@ -256,7 +250,7 @@ def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
             if is_requests_queue_empty():
                 print(f"[{datetime.now()}] Requests queue is empty. Exiting...")
                 sys.exit(0)
-            
+
             print(
                 f"[{datetime.now()}] Spider execution finished. Waiting {wait_time} seconds..."
             )

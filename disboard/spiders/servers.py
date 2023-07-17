@@ -43,12 +43,18 @@ class ServersSpider(RedisSpider):
             return ""
 
     @property
-    def language_postfix(self) -> str:
+    def flags_postfix(self) -> str:
         language = self.settings.get("LANGUAGE")
-        if language == "":
-            return ""
-        else:
+        sort_by_member_count = self.settings.get("SORT_BY_MEMBER_COUNT")
+
+        if language and sort_by_member_count:
+            return f"?sort=-member_count&fl={language}"
+        elif language and not sort_by_member_count:
             return f"?fl={language}"
+        elif not language and sort_by_member_count:
+            return "?sort=-member_count"
+        else:
+            return ""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,10 +94,12 @@ class ServersSpider(RedisSpider):
         request the same URL again.
         """
         if blocked_by_cloudflare(response):
-            self.logger.warning(f"Blocked by Cloudflare: <{response.status} {response.url}>")
+            self.logger.warning(
+                f"Blocked by Cloudflare: <{response.status} {response.url}>"
+            )
             self.logger.debug(f"Retrying: {response.url}")
             request = response.request
-            request.meta["dont_filter"] = True
+            request.dont_filter = True
             yield request
 
     def _log_disboard_server_items(
@@ -136,12 +144,8 @@ class ServersSpider(RedisSpider):
         self, n_of_server_items: int, response: Response
     ) -> Generator[Request, None, None]:
         """
-        If there are more than 2 DisboardServerItems in the response,
-        and the spider is configured to follow tag links,
+        If the spider is configured to follow tag links,
         request all tag links in the response.
-
-        This is done to avoid requesting tag links with servers
-        that we already have in the database.
         """
-        if n_of_server_items >= 2 and self.settings.get("FOLLOW_TAG_LINKS"):
+        if self.settings.get("FOLLOW_TAG_LINKS"):
             yield from request_all_tag_urls(self, response)

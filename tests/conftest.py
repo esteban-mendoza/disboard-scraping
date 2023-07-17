@@ -13,7 +13,7 @@ def settings():
 def spider_mock():
     class SpiderMock:
         page_iterator_prefix = ""
-        language_postfix = "?fl=de"
+        flags_postfix = "?fl=de"
         base_url = "https://disboard.org"
         settings = Settings({"USE_WEB_CACHE": False, "LANGUAGE": "de"})
 
