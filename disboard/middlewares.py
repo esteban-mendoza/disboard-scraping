@@ -5,9 +5,46 @@
 
 import json
 from scrapy import signals
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
 from scrapy.exceptions import IgnoreRequest
 from scrapy.http import HtmlResponse, Request
 from logging import getLogger
+
+
+class FlareSolverrGetSolutionStatusMiddleware:
+    """
+    This middleware extracts the proper solution status from the "solution"
+    given by the FlareSolverr proxy server.
+
+    We are doing this because as for today (2023-07-17), FlareSolverr
+    always returns a 200 status code and empty headers.
+    See https://github.com/FlareSolverr/FlareSolverr/blob/7728f2ab317ea4b1a9a417b65465e130eb3f337f/src/flaresolverr_service.py#L392
+    """
+
+    logger = getLogger(__name__)
+
+    def __init__(self, settings):
+        self.retry_http_codes = set(
+            int(x) for x in settings.getlist("RETRY_HTTP_CODES")
+        )
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings)
+
+    def process_response(self, request, response, spider):
+        """
+        This method processes the response object and returns a new response
+        object with a status code that we can retry, as defined in
+        the RETRY_HTTP_CODES setting.
+        """
+
+        for status_code in self.retry_http_codes:
+            if str(status_code) in response.css("title::text").get():
+                self.logger.warning(f"Non 200 response: <{status_code} {response.url}>")
+                return response.replace(status=status_code)
+
+        return response
 
 
 class FlareSolverrProxyMiddleware:
@@ -18,12 +55,17 @@ class FlareSolverrProxyMiddleware:
 
     logger = getLogger(__name__)
 
+    def __init__(self, settings):
+        self.proxy_url = settings.get("PROXY_URL")
+        self.retry_times = settings.getint("RETRY_TIMES")
+        self.retry_http_codes = set(
+            int(x) for x in settings.getlist("RETRY_HTTP_CODES")
+        )
+
     @classmethod
     def from_crawler(cls, crawler):
         # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
+        return cls(crawler.settings)
 
     def process_request(self, request, spider):
         """
@@ -112,6 +154,7 @@ class FlareSolverrProxyMiddleware:
 
         try:
             solution_response = json.loads(response.body).get("solution")
+
         except json.JSONDecodeError:
             self.logger.error(
                 f"Failed to parse JSON response: <{response.status} {response.url}>"
@@ -123,30 +166,11 @@ class FlareSolverrProxyMiddleware:
 
         html_response = HtmlResponse(
             url=solution_response.get("url"),
+            status=response.status,
             body=solution_response.get("response"),
             headers=response.headers,
             request=original_request,
             protocol=response.protocol,
             encoding="utf-8",
         )
-
-        self.logger.debug(
-            f"Successfully got response from proxy server {self.proxy_url}: <{html_response.status} {html_response.url}>",
-        )
         return html_response
-
-    def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
-
-        # Must either:
-        # - return None: continue processing this exception
-        # - return a Response object: stops process_exception() chain
-        # - return a Request object: stops process_exception() chain
-        pass
-
-    def spider_opened(self, spider):
-        self.proxy_url = spider.settings.get("PROXY_URL")
-        self.retry_http_codes = spider.settings.get("RETRY_HTTP_CODES")
-        self.retry_times = spider.settings.get("RETRY_TIMES")
-        spider.logger.info("Spider opened: %s" % spider.name)

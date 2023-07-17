@@ -6,7 +6,13 @@ from scrapy.settings import Settings
 
 @pytest.fixture
 def settings():
-    return Settings({"USE_WEB_CACHE": False, "LANGUAGE": "de"})
+    return Settings(
+        {
+            "USE_WEB_CACHE": False,
+            "LANGUAGE": "de",
+            "RETRY_HTTP_CODES": [500, 502, 503, 504, 522, 524, 404, 408, 429],
+        }
+    )
 
 
 @pytest.fixture

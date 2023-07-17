@@ -39,10 +39,6 @@ def has_pagination_links(response: Response) -> bool:
     return next_url is not None
 
 
-def get_guild_ids(response: Response) -> set:
-    pass
-
-
 def extract_disboard_server_items(
     response: Response,
 ) -> Generator[DisboardServerItem, None, None]:

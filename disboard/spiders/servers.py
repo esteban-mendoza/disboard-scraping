@@ -33,11 +33,11 @@ class ServersSpider(RedisSpider):
     allowed_domains: list = ["disboard.org", "webcache.googleusercontent.com"]
 
     # Max idle time (in seconds) before the spider stops checking redis and shuts down
-    max_idle_time: float = 7
+    max_idle_time: float = 120
 
     @property
     def page_iterator_prefix(self) -> str:
-        if self.settings.get("USE_WEB_CACHE"):
+        if self.settings.getbool("USE_WEB_CACHE"):
             return WEBCACHE_URL
         else:
             return ""
@@ -45,7 +45,7 @@ class ServersSpider(RedisSpider):
     @property
     def flags_postfix(self) -> str:
         language = self.settings.get("LANGUAGE")
-        sort_by_member_count = self.settings.get("SORT_BY_MEMBER_COUNT")
+        sort_by_member_count = self.settings.getbool("SORT_BY_MEMBER_COUNT")
 
         if language and sort_by_member_count:
             return f"?sort=-member_count&fl={language}"
@@ -58,8 +58,7 @@ class ServersSpider(RedisSpider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        scraper_logger = getLogger("scrapy.core.scraper")
-        scraper_logger.setLevel(INFO)
+        getLogger("scrapy.core.scraper").setLevel(INFO)
 
     def parse(
         self, response: Response
@@ -80,8 +79,9 @@ class ServersSpider(RedisSpider):
             if n_of_server_items > 0:
                 yield from extract_disboard_server_items(response)
                 yield from self._handle_pagination_links(n_of_server_items, response)
-                yield from self._handle_category_links(response)
-                yield from self._handle_tag_links(n_of_server_items, response)
+
+            yield from self._handle_category_links(response)
+            yield from self._handle_tag_links(n_of_server_items, response)
 
         except ValueError:
             self._log_disboard_server_items(0, response, WARNING)
@@ -90,8 +90,7 @@ class ServersSpider(RedisSpider):
         self, response: Response
     ) -> Generator[Request, None, None]:
         """
-        If the response has been blocked by Cloudflare,
-        request the same URL again.
+        If the response has been blocked by Cloudflare, request the same URL again.
         """
         if blocked_by_cloudflare(response):
             self.logger.warning(
@@ -101,16 +100,6 @@ class ServersSpider(RedisSpider):
             request = response.request
             request.dont_filter = True
             yield request
-
-    def _log_disboard_server_items(
-        self, n_of_server_items: int, response: Response, log_level: int = DEBUG
-    ) -> None:
-        self.logger.log(
-            log_level,
-            f"Found {n_of_server_items} DisboardServerItems in {response.url}",
-        )
-        if n_of_server_items == 0:
-            self.logger.debug(f"Response body: {response.body}")
 
     def _handle_pagination_links(
         self, n_of_server_items: int, response: Response
@@ -126,7 +115,7 @@ class ServersSpider(RedisSpider):
         if (
             n_of_server_items >= 12
             and has_pagination_links(response)
-            and self.settings.get("FOLLOW_PAGINATION_LINKS")
+            and self.settings.getbool("FOLLOW_PAGINATION_LINKS")
         ):
             yield from request_next_url(self, response)
 
@@ -137,15 +126,27 @@ class ServersSpider(RedisSpider):
         If the spider is configured to follow category links,
         request all category links in the response.
         """
-        if self.settings.get("FOLLOW_CATEGORY_LINKS"):
+        if self.settings.getbool("FOLLOW_CATEGORY_LINKS"):
             yield from request_all_category_urls(self, response)
 
     def _handle_tag_links(
         self, n_of_server_items: int, response: Response
     ) -> Generator[Request, None, None]:
         """
-        If the spider is configured to follow tag links,
-        request all tag links in the response.
+        If the spider is configured to follow tag links, request all tag links
+        in the response.
+
+        These tag links might be in the "similar-tags" section of the response.
         """
-        if self.settings.get("FOLLOW_TAG_LINKS"):
+        if self.settings.getbool("FOLLOW_TAG_LINKS"):
             yield from request_all_tag_urls(self, response)
+
+    def _log_disboard_server_items(
+        self, n_of_server_items: int, response: Response, log_level: int = DEBUG
+    ) -> None:
+        self.logger.log(
+            log_level,
+            f"Found {n_of_server_items} DisboardServerItems in {response.url}",
+        )
+        if n_of_server_items == 0:
+            self.logger.debug(f"Response body: {response.body}")

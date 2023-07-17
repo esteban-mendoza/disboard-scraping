@@ -54,7 +54,8 @@ DOWNLOAD_DELAY = 7
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
-    "scrapy.downloadermiddlewares.retry.RetryMiddleware": None,
+    "disboard.middlewares.FlareSolverrGetSolutionStatusMiddleware": 541,
+    "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
 }
 
 # Enable or disable extensions
@@ -94,7 +95,7 @@ AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure retry middleware
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
-RETRY_ENABLED = False
+RETRY_ENABLED = True
 # Maximum number of times to retry, in addition to the first download.
 RETRY_TIMES = 2
 # Which HTTP response codes to retry.

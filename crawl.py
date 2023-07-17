@@ -109,11 +109,6 @@ def add_cli_arguments() -> Namespace:
         help="URL of the FlareSolverr proxy server",
         type=str,
     )
-    parser.add_argument(
-        "--proxy-pool",
-        help="Path to the proxy pool file",
-        type=str,
-    )
 
     return parser.parse_args()
 
@@ -126,9 +121,9 @@ def setup_environment(args: Namespace) -> None:
     os.environ["LANGUAGE"] = args.language
 
     os.environ["USE_WEB_CACHE"] = str(args.use_web_cache)
-    os.environ["FOLLOW_PAGINATION_LINKS"] = str(args.dont_follow_pagination_links)
-    os.environ["FOLLOW_CATEGORY_LINKS"] = str(args.dont_follow_category_links)
-    os.environ["FOLLOW_TAG_LINKS"] = str(args.dont_follow_tag_links)
+    os.environ["FOLLOW_PAGINATION_LINKS"] = str(not args.dont_follow_pagination_links)
+    os.environ["FOLLOW_CATEGORY_LINKS"] = str(not args.dont_follow_category_links)
+    os.environ["FOLLOW_TAG_LINKS"] = str(not args.dont_follow_tag_links)
     os.environ["SORT_BY_MEMBER_COUNT"] = str(args.sort_by_member_count)
     if args.proxy_url:
         os.environ["PROXY_URL"] = args.proxy_url
