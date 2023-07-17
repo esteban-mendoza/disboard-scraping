@@ -170,6 +170,20 @@ def restart_job() -> None:
     client.close()
 
 
+def is_requests_queue_empty() -> bool:
+    """
+    This function checks if the requests queue is empty.
+    """
+    redis_url = os.environ["REDIS_URL"]
+    spider_name = os.environ["SPIDER_NAME"]
+
+    client = redis.Redis.from_url(redis_url)
+    requests_queue_length = client.zcard(f"{spider_name}:requests")
+
+    client.close()
+    return requests_queue_length == 0
+
+
 def run_spider_with_proxy(proxy_url: str) -> None:
     """
     Runs a single spider with the given proxy url.
@@ -235,9 +249,14 @@ def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
             print(f"[{datetime.now()}] Waiting {execution_time} seconds...")
             time.sleep(execution_time)
 
+            print(f"[{datetime.now()}] Terminating spiders...")
             for process in processes:
                 process.terminate()
 
+            if is_requests_queue_empty():
+                print(f"[{datetime.now()}] Requests queue is empty. Exiting...")
+                sys.exit(0)
+            
             print(
                 f"[{datetime.now()}] Spider execution finished. Waiting {wait_time} seconds..."
             )
