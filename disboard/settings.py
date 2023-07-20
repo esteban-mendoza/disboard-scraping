@@ -97,7 +97,7 @@ AUTOTHROTTLE_DEBUG = False
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#module-scrapy.downloadermiddlewares.retry
 RETRY_ENABLED = True
 # Maximum number of times to retry, in addition to the first download.
-RETRY_TIMES = 2
+RETRY_TIMES = 4
 # Which HTTP response codes to retry.
 RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 404, 408, 429]
 
