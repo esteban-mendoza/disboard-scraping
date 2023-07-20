@@ -22,8 +22,7 @@ from typing import Generator, Union
 
 class ServersSpider(RedisSpider):
     """
-    This spider crawls Disboard server listings using
-    the "redis_key" queue in Redis.
+    This spider crawls Disboard server listings using the /servers endpoint.
     """
 
     logger = getLogger(__name__)

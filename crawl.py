@@ -159,6 +159,7 @@ def restart_job() -> None:
     with client.pipeline() as pipe:
         pipe.delete(f"{spider_name}:dupefilter")
         pipe.delete(f"{spider_name}:requests")
+        pipe.delete(f"{spider_name}:guild_id")
         pipe.lpush(f"{spider_name}:start_urls", start_url)
         pipe.execute()
 
