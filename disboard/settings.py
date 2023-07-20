@@ -166,9 +166,6 @@ FOLLOW_PAGINATION_LINKS = os.getenv("FOLLOW_PAGINATION_LINKS")
 FOLLOW_CATEGORY_LINKS = os.getenv("FOLLOW_CATEGORY_LINKS")
 # If True, the crawler will follow tag links
 FOLLOW_TAG_LINKS = os.getenv("FOLLOW_TAG_LINKS")
-# If True, we will sort the results by member count
-# If False, we will sort the results by "recently bumped" (default)
-SORT_BY_MEMBER_COUNT = os.getenv("SORT_BY_MEMBER_COUNT")
 # The language to filter all requests by
 LANGUAGE = os.getenv("LANGUAGE")
 # URL of the FlareSolverr proxy server

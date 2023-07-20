@@ -18,6 +18,7 @@ import time
 
 from datetime import datetime
 from argparse import ArgumentParser, Namespace
+from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 from dotenv import load_dotenv, find_dotenv
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -76,14 +77,6 @@ def add_cli_arguments() -> Namespace:
         default=False,
     )
     parser.add_argument(
-        "-m",
-        "--sort-by-member-count",
-        help="Sort servers by member count. If this flag is not set, \
-            servers will be sorted by 'recently bumped'.",
-        action="store_true",
-        default=False,
-    )
-    parser.add_argument(
         "-redis",
         "--redis-url",
         help="Redis database URL",
@@ -130,37 +123,51 @@ def setup_environment(args: Namespace) -> None:
     os.environ["FOLLOW_PAGINATION_LINKS"] = str(not args.dont_follow_pagination_links)
     os.environ["FOLLOW_CATEGORY_LINKS"] = str(not args.dont_follow_category_links)
     os.environ["FOLLOW_TAG_LINKS"] = str(not args.dont_follow_tag_links)
-    os.environ["SORT_BY_MEMBER_COUNT"] = str(args.sort_by_member_count)
     if args.proxy_url:
         os.environ["PROXY_URL"] = args.proxy_url
     if args.redis_url:
         os.environ["REDIS_URL"] = args.redis_url
     if args.db_url:
         os.environ["DB_URL"] = args.db_url
-    if args.start_url:
-        os.environ["START_URL"] = args.start_url
     if args.restart_job:
         os.environ["RESTART_JOB"] = str(args.restart_job)
-        if not args.start_url:
-            raise ValueError("--start-url is required when --restart-job is provided")
+
+
+def get_start_urls() -> list:
+    """
+    This function returns a list of start_urls based on the
+    selected language.
+    """
+    prefix = WEBCACHE_URL if os.getenv("USE_WEB_CACHE", False) else ""
+
+    language = os.environ["LANGUAGE"]
+    base_url = DISBOARD_URL
+
+    by_language = f"{prefix}{base_url}?fl={language}"
+    by_language_and_members = f"{prefix}{base_url}?fl={language}&sort=member_count"
+    return [
+        by_language,
+        by_language_and_members,
+    ]
 
 
 def restart_job() -> None:
     """
     This function restarts the crawler job. It deletes the
     associated Redis keys {spider_name}:dupefilter, {spider_name}:requests,
-    and sets the {spider_name}::start_urls to the provided start_url.
+    and sets the {spider_name}::start_urls to the necessary start_urls.
     """
     redis_url = os.environ["REDIS_URL"]
     spider_name = os.environ["SPIDER_NAME"]
-    start_url = os.environ["START_URL"]
+    start_urls = get_start_urls()
 
     client = redis.Redis.from_url(redis_url)
     with client.pipeline() as pipe:
         pipe.delete(f"{spider_name}:dupefilter")
         pipe.delete(f"{spider_name}:requests")
         pipe.delete(f"{spider_name}:guild_id")
-        pipe.lpush(f"{spider_name}:start_urls", start_url)
+        for url in start_urls:
+            pipe.lpush(f"{spider_name}:start_urls", url)
         pipe.execute()
 
     client.close()

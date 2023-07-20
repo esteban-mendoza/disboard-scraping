@@ -18,8 +18,8 @@ def settings():
 @pytest.fixture
 def spider_mock():
     class SpiderMock:
-        page_iterator_prefix = ""
-        flags_postfix = "?fl=de"
+        url_prefix = ""
+        language = "de"
         base_url = "https://disboard.org"
         settings = Settings({"USE_WEB_CACHE": False, "LANGUAGE": "de"})
 

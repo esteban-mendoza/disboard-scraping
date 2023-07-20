@@ -35,25 +35,15 @@ class ServersSpider(RedisSpider):
     max_idle_time: float = 120
 
     @property
-    def page_iterator_prefix(self) -> str:
+    def url_prefix(self) -> str:
         if self.settings.getbool("USE_WEB_CACHE"):
             return WEBCACHE_URL
         else:
             return ""
 
     @property
-    def flags_postfix(self) -> str:
-        language = self.settings.get("LANGUAGE")
-        sort_by_member_count = self.settings.getbool("SORT_BY_MEMBER_COUNT")
-
-        if language and sort_by_member_count:
-            return f"?sort=-member_count&fl={language}"
-        elif language and not sort_by_member_count:
-            return f"?fl={language}"
-        elif not language and sort_by_member_count:
-            return "?sort=-member_count"
-        else:
-            return ""
+    def language(self) -> str:
+        return self.settings.get("LANGUAGE")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -80,7 +70,7 @@ class ServersSpider(RedisSpider):
                 yield from self._handle_pagination_links(n_of_server_items, response)
 
             yield from self._handle_category_links(response)
-            yield from self._handle_tag_links(n_of_server_items, response)
+            yield from self._handle_tag_links(response)
 
         except ValueError:
             self._log_disboard_server_items(0, response, WARNING)
@@ -104,15 +94,15 @@ class ServersSpider(RedisSpider):
         self, n_of_server_items: int, response: Response
     ) -> Generator[Request, None, None]:
         """
-        If there are more than 12 DisboardServerItems in the response,
+        If there are more than 5 DisboardServerItems in the response,
         and the response has pagination links, and the spider is configured
         to follow pagination links, request the next page.
 
-        When the response has less than 12 DisboardServerItems,
+        When the response has less than 5 DisboardServerItems,
         the next page will probably have 0 DisboardServerItems.
         """
         if (
-            n_of_server_items >= 12
+            n_of_server_items >= 5
             and has_pagination_links(response)
             and self.settings.getbool("FOLLOW_PAGINATION_LINKS")
         ):
@@ -128,9 +118,7 @@ class ServersSpider(RedisSpider):
         if self.settings.getbool("FOLLOW_CATEGORY_LINKS"):
             yield from request_all_category_urls(self, response)
 
-    def _handle_tag_links(
-        self, n_of_server_items: int, response: Response
-    ) -> Generator[Request, None, None]:
+    def _handle_tag_links(self, response: Response) -> Generator[Request, None, None]:
         """
         If the spider is configured to follow tag links, request all tag links
         in the response.
