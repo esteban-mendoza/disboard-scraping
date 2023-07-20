@@ -38,9 +38,9 @@ class ServersGuildIdPipeline:
     def process_item(self, item, spider):
         guild_id = item["guild_id"]
         if self.client.sismember(self.key_name, guild_id):
-            self.stats.inc_value("guild_id/old")
+            self.stats.inc_value("item_scraped_count/old")
         else:
-            self.stats.inc_value("guild_id/new")
+            self.stats.inc_value("item_scraped_count/new")
             self.client.sadd(self.key_name, guild_id)
 
         return item

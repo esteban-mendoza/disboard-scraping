@@ -3,6 +3,7 @@ from disboard.commons.helpers import (
     blocked_by_cloudflare,
     count_disboard_server_items,
     has_pagination_links,
+    get_url_postfixes,
     extract_disboard_server_items,
     request_next_url,
     request_all_category_urls,
@@ -23,6 +24,11 @@ def test_count_disboard_server_items(sample_response):
 def test_has_pagination_links(sample_response):
     has_links = has_pagination_links(sample_response)
     assert has_links
+
+
+def test_get_url_postfixes(spider_mock):
+    postfixes = get_url_postfixes(spider_mock)
+    assert postfixes == ["?fl=de", "?fl=de&sort=-member_count"]
 
 
 def test_extract_disboard_server_items(sample_response):
@@ -48,15 +54,23 @@ def test_request_next_url(spider_mock, sample_response):
 
 def test_request_all_category_urls(spider_mock, sample_response):
     requests = list(request_all_category_urls(spider_mock, sample_response))
-    assert len(requests) == 8
+    assert len(requests) == 16
     assert requests[0].url == "https://disboard.org/servers/category/gaming?fl=de"
     assert requests[0].priority == 22 + 25
+    assert (
+        requests[1].url
+        == "https://disboard.org/servers/category/gaming?fl=de&sort=-member_count"
+    )
+    assert requests[1].priority == 22 + 25
 
 
 def test_request_all_tag_urls(spider_mock, sample_response):
     requests = list(request_all_tag_urls(spider_mock, sample_response))
-    assert len(requests) == 140
+    assert len(requests) == 280
     assert requests[0].url == "https://disboard.org/servers/tag/community?fl=de"
     assert requests[0].priority == 22 + 1
-    assert requests[1].url == "https://disboard.org/servers/tag/gaming?fl=de"
+    assert (
+        requests[1].url
+        == "https://disboard.org/servers/tag/community?fl=de&sort=-member_count"
+    )
     assert requests[1].priority == 22 + 1

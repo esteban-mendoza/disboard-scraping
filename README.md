@@ -52,7 +52,7 @@ from the last saved state––. It will start crawling from `https://disboard.o
 and will scrape the website without filtering out by language.
 
 ```bash
-python3 crawl.py --spider servers --restart-job --start-url 'https://disboard.org/servers' --language ''
+python3 crawl.py --spider-name servers --restart-job --language ''
 ```
 
 You can run the following command to see all the available options to
