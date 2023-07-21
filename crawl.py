@@ -138,13 +138,13 @@ def get_start_urls() -> list:
     This function returns a list of start_urls based on the
     selected language.
     """
-    prefix = WEBCACHE_URL if os.getenv("USE_WEB_CACHE", False) else ""
+    prefix = WEBCACHE_URL if os.getenv("USE_WEB_CACHE") == "True" else ""
 
     language = os.environ["LANGUAGE"]
     base_url = DISBOARD_URL
 
-    by_language = f"{prefix}{base_url}?fl={language}"
-    by_language_and_members = f"{prefix}{base_url}?fl={language}&sort=member_count"
+    by_language = f"{prefix}{base_url}/servers?fl={language}"
+    by_language_and_members = f"{prefix}{base_url}/servers?fl={language}&sort=member_count"
     return [
         by_language,
         by_language_and_members,
@@ -240,7 +240,7 @@ def run_scheduled_spiders(execution_time: float, wait_time: float) -> None:
     restarted before running the spiders.
     """
     try:
-        if os.getenv("RESTART_JOB", False):
+        if os.getenv("RESTART_JOB") == "True":
             print(f"[{datetime.now()}] Restarting job...")
             restart_job()
             os.environ["RESTART_JOB"] = "False"
