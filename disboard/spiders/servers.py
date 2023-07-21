@@ -86,8 +86,9 @@ class ServersSpider(RedisSpider):
                 f"Blocked by Cloudflare: <{response.status} {response.url}>"
             )
             self.logger.debug(f"Retrying: {response.url}")
-            request = response.request
-            request.dont_filter = True
+            request = response.request.replace(
+                dont_filter=True, priority=response.request.priority - 10
+            )
             yield request
 
     def _handle_pagination_links(

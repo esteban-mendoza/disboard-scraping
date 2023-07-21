@@ -131,7 +131,9 @@ class FlareSolverrProxyMiddleware:
                     "flaresolverr_retry_count": retry_count + 1,
                 }
             )
-            original_request = original_request.replace(meta=updated_meta)
+            original_request = original_request.replace(
+                meta=updated_meta, priority=original_request.priority - 10
+            )
 
             self.logger.debug(
                 f"Retrying request. Retry count: {retry_count + 1}: <{response.status} {original_request.url}>"

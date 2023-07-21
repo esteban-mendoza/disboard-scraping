@@ -144,7 +144,9 @@ def get_start_urls() -> list:
     base_url = DISBOARD_URL
 
     by_language = f"{prefix}{base_url}/servers?fl={language}"
-    by_language_and_members = f"{prefix}{base_url}/servers?fl={language}&sort=member_count"
+    by_language_and_members = (
+        f"{prefix}{base_url}/servers?fl={language}&sort=member_count"
+    )
     return [
         by_language,
         by_language_and_members,

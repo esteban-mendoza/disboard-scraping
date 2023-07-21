@@ -123,7 +123,7 @@ import logging
 
 # See https://docs.scrapy.org/en/latest/topics/logging.html#logging-settings
 # Log level to use (defaults to DEBUG)
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 # File name to use for logging output. If None, standard error will be used.
 LOG_FILE = os.getenv("LOG_FILE", "scrapy.log")
 # If LOG_FILE_APPEND = False, the log file specified with LOG_FILE will be overwritten
