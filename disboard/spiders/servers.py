@@ -36,7 +36,7 @@ class ServersSpider(RedisSpider):
 
     @property
     def url_prefix(self) -> str:
-        if self.use_web_cache:
+        if self.settings.getbool("USE_WEB_CACHE"):
             return WEBCACHE_URL
         else:
             return ""
@@ -48,10 +48,7 @@ class ServersSpider(RedisSpider):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         getLogger("scrapy.core.scraper").setLevel(INFO)
-        self.use_web_cache = self.settings.getbool("USE_WEB_CACHE")
-        self.follow_pagination_links = self.settings.getbool("FOLLOW_PAGINATION_LINKS")
-        self.follow_category_links = self.settings.getbool("FOLLOW_CATEGORY_LINKS")
-        self.follow_tag_links = self.settings.getbool("FOLLOW_TAG_LINKS")
+
 
     def parse(
         self, response: Response
@@ -109,7 +106,7 @@ class ServersSpider(RedisSpider):
         if (
             n_of_server_items >= 5
             and has_pagination_links(response)
-            and self.follow_pagination_links
+            and self.settings.getbool("FOLLOW_PAGINATION_LINKS")
         ):
             yield from request_next_url(self, response)
 
@@ -120,7 +117,7 @@ class ServersSpider(RedisSpider):
         If the spider is configured to follow category links,
         request all category links in the response.
         """
-        if self.follow_category_links:
+        if self.settings.getbool("FOLLOW_CATEGORY_LINKS"):
             yield from request_all_category_urls(self, response)
 
     def _handle_tag_links(self, response: Response) -> Generator[Request, None, None]:
@@ -130,7 +127,7 @@ class ServersSpider(RedisSpider):
 
         These tag links might be in the "similar-tags" section of the response.
         """
-        if self.follow_tag_links:
+        if self.settings.getbool("FOLLOW_TAG_LINKS"):
             yield from request_all_tag_urls(self, response)
 
     def _log_disboard_server_items(
