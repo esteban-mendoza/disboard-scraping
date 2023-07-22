@@ -89,7 +89,6 @@ class FlareSolverrProxyMiddleware:
             ).encode("utf-8"),
             meta={
                 "original_request": request,
-                "dont_redirect": True,
                 "dont_filter": True,
                 "handle_httpstatus_all": True,
                 "redirected_to_flare_solverr": True,
