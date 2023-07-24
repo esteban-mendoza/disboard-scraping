@@ -16,7 +16,7 @@ class FlareSolverrGetSolutionStatusMiddleware:
     This middleware extracts the proper solution status from the "solution"
     given by the FlareSolverr proxy server.
 
-    We are doing this because as for today (2023-07-17), FlareSolverr
+    We are doing this because as for today (2023-07-24), FlareSolverr
     always returns a 200 status code and empty headers.
     See https://github.com/FlareSolverr/FlareSolverr/blob/7728f2ab317ea4b1a9a417b65465e130eb3f337f/src/flaresolverr_service.py#L392
     """

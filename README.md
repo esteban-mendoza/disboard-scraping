@@ -34,7 +34,7 @@ docker run -d --name redis -p 6379:6379 redis
 ```
 
 The spiders connect to a Postgres database to store the scraped data.
-The database connection settings are stored in the `scrapy/disboard/settings.py`
+The database connection settings are stored in the `disboard/settings.py`
 file under the `## Database connection` section. For more information, see
 the [Database connection](#database-connection) section below.
 
@@ -64,7 +64,7 @@ python3 crawl.py --help
 
 ## Configuration
 
-The `scrapy/disboard/settings.py` file contains the settings for the project.
+The `disboard/settings.py` file contains the settings for the project.
 Each of the settings can be overridden by setting the corresponding environment
 variable in a `.env` file in the root directory.
 
@@ -88,22 +88,12 @@ The following settings are available:
   in a specific language, you can set this variable to the corresponding
   language code. `disboard/commons/constants.py` contains a list of all the
   available language codes.
-- `PROXY_URL`: The URL of the FlareSolverr proxy server. In order to use
-  FlareSolverr, the `settings.py` file must contain the following lines:
-
-  ```python
-  DOWNLOADER_MIDDLEWARES = {
-      "disboard.middlewares.FlareSolverrDownloaderMiddleware": 543,
-  }
-  ```
-
+- `PROXY_URL`: The URL of the FlareSolverr proxy server.
 - `REDIS_URL`: The URL of the Redis server. The spiders use Redis to queue
   and filter out duplicate requests.
 - `DB_URL`: The URL of the Postgres database. The spiders use the database
   to store the scraped data. For more information, see the
   [Database connection](#database-connection) section below.
-- `LOG_FILE`: The path to the log file. By default, it is set to
-  `scrapy.log` in the root directory.
 
 ## Database connection
 
@@ -121,3 +111,31 @@ The database connection settings are configured in the `scrapy/disboard/settings
 file under the `## Database connection` section. The connection requires variables
 to be set in a `.env` file in the root directory.
 This is also true for the Redis connection and the FlareSolverr proxy server.
+
+## Custom downloader middlewares
+
+The project uses the following custom downloader middlewares:
+
+- `disboard.middlewares.FlareSolverrRedirectMiddleware`: This middleware
+  redirects the requests to a [FlareSolverr proxy server](https://github.com/FlareSolverr/FlareSolverr)
+  and extracts the solution response from the proxy server's response.
+- `disboard.middlewares.FlareSolverrRetryMiddleware`: This middleware
+  retries the requests that failed due to the FlareSolverr proxy server.
+- `disboard.middlewares.FlareSolverrGetSolutionStatusMiddleware`:
+  This middleware extracts the correct status from the Disboard website's
+  response. We are doing this because as for today (2023-07-24) the FlareSolverr
+  proxy server always returns a `200` status and empty headers.
+  
+  For more details, refer to [FlareSolverr's source code](https://github.com/FlareSolverr/FlareSolverr/blob/7728f2ab317ea4b1a9a417b65465e130eb3f337f/src/flaresolverr_service.py#L392).
+
+In order to use FlareSolverr, the `settings.py` file must contain the following lines:
+
+```python
+DOWNLOADER_MIDDLEWARES = {
+    "disboard.middlewares.FlareSolverrRedirectMiddleware": 542,
+}
+```
+
+For more information about this, see [_Activating a Downloader Middleware_](https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#activating-a-downloader-middleware).
+
+For more information about downloader middlewares, see [Scrapy's documentation on Downloader Middlewares](https://docs.scrapy.org/en/latest/topics/downloader-middleware.html).
