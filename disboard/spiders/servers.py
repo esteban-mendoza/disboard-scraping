@@ -6,6 +6,7 @@ starting from the /servers endpoint.
 from disboard.commons.constants import DISBOARD_URL, WEBCACHE_URL
 from disboard.commons.helpers import (
     blocked_by_cloudflare,
+    is_server_listing,
     count_disboard_server_items,
     has_pagination_links,
     extract_disboard_server_items,
@@ -91,6 +92,13 @@ class ServersSpider(RedisSpider):
                 dont_filter=True, priority=response.request.priority - 10
             )
             yield request
+        
+        if not is_server_listing(response):
+            self.logger.debug(
+                f"Response is not a server listing: <{response.status} {response.url}>"
+            )
+            self.logger.debug(f"Response body: {response.body}")
+
 
     def _handle_pagination_links(
         self, n_of_server_items: int, response: Response

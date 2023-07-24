@@ -17,6 +17,18 @@ def blocked_by_cloudflare(response: Response) -> bool:
         return False
 
 
+def is_server_listing(response: Response) -> bool:
+    """
+    Given a response from a Disboard server list page, returns True if
+    the response is a server listing, False otherwise.
+    """
+    title = response.css("title::text").get().lower()
+    if "discord servers" in title:
+        return True
+    else:
+        return False
+
+
 def count_disboard_server_items(response: Response) -> int:
     """
     Given a response from a Disboard server list page, returns the number
