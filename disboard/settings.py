@@ -53,7 +53,8 @@ DOWNLOAD_DELAY = 7
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    "disboard.middlewares.FlareSolverrProxyMiddleware": 542,
+    "disboard.middlewares.FlareSolverrRetryMiddleware": 543,
+    "disboard.middlewares.FlareSolverrRedirectMiddleware": 542,
     "disboard.middlewares.FlareSolverrGetSolutionStatusMiddleware": 541,
     "scrapy.downloadermiddlewares.retry.RetryMiddleware": 90,
 }
