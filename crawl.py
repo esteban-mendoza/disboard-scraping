@@ -1,5 +1,6 @@
 """
-This is the main entry point of the application.
+This is the main entry point of the application when running
+locally without containers.
 
 The application is a Scrapy spider that crawls Disboard.org
 and extracts information about Discord servers.
@@ -108,6 +109,12 @@ def add_cli_arguments() -> Namespace:
         help="URL of the FlareSolverr proxy server",
         type=str,
     )
+    parser.add_argument(
+        "--log-file",
+        help="File name to use for logging output. If None, standard output will be used.",
+        type=str,
+        default="scrapy.log",
+    )
 
     return parser.parse_args()
 
@@ -118,6 +125,7 @@ def setup_environment(args: Namespace) -> None:
     """
     os.environ["SPIDER_NAME"] = args.spider_name
     os.environ["LANGUAGE"] = args.language
+    os.environ["LOG_FILE"] = args.log_file
 
     os.environ["USE_WEB_CACHE"] = str(args.use_web_cache)
     os.environ["FOLLOW_PAGINATION_LINKS"] = str(not args.dont_follow_pagination_links)
