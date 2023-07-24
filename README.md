@@ -108,8 +108,8 @@ ITEM_PIPELINES = {
 ```
 
 The database connection settings are configured in the `scrapy/disboard/settings.py`
-file under the `## Database connection` section. The connection requires variables
-to be set in a `.env` file in the root directory.
+file under the `## Database connection` section. The connection requires
+variables to be set in a `.env` file in the root directory.
 This is also true for the Redis connection and the FlareSolverr proxy server.
 
 ## Custom downloader middlewares
@@ -123,8 +123,8 @@ The project uses the following custom downloader middlewares:
   retries the requests that failed due to the FlareSolverr proxy server.
 - `disboard.middlewares.FlareSolverrGetSolutionStatusMiddleware`:
   This middleware extracts the correct status from the Disboard website's
-  response. We are doing this because as for today (2023-07-24) the FlareSolverr
-  proxy server always returns a `200` status and empty headers.
+  response. We are doing this because as for today (2023-07-24) the
+  FlareSolverr proxy server always returns a `200` status and empty headers.
   
   For more details, refer to [FlareSolverr's source code](https://github.com/FlareSolverr/FlareSolverr/blob/7728f2ab317ea4b1a9a417b65465e130eb3f337f/src/flaresolverr_service.py#L392).
 
@@ -138,4 +138,30 @@ DOWNLOADER_MIDDLEWARES = {
 
 For more information about this, see [_Activating a Downloader Middleware_](https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#activating-a-downloader-middleware).
 
-For more information about downloader middlewares, see [Scrapy's documentation on Downloader Middlewares](https://docs.scrapy.org/en/latest/topics/downloader-middleware.html).
+For more information about downloader middlewares, see
+[Scrapy's documentation on Downloader Middlewares](https://docs.scrapy.org/en/latest/topics/downloader-middleware.html).
+
+## Custom item pipelines
+
+The project uses the following custom item pipelines:
+
+- `disboard.pipelines.PostgresPipeline`: This pipeline stores the scraped data
+  in a Postgres database. For more information, see the
+  [Database connection](#database-connection) section above.
+- `diwboard.pipelines.ServersGuildIdPipeline`: This pipeline stores
+  the unique `guild_id`'s of the scraped servers in a Redis set for keeping
+  track of the servers that have already been scraped.
+  
+  When a spider finishes its execution it will report two counters:
+  `item_scraped_count/old` and `item_scraped_count/new` that will
+  indicate the number of scraped servers that were already in the
+  database and the number of scraped servers that were not in the
+  database, respectively.
+
+In order to activate or deactivate a pipeline, the `ITEM_PIPELINES`
+variable msut be set in the `settings.py` file. For more information,
+see [_Activating an Item Pipeline Component_](https://docs.scrapy.org/en/latest/topics/item-pipeline.html#activating-an-item-pipeline-component).
+
+For more information about item pipelines, see
+[Srapy's documentation on Item Pipelines](https://docs.scrapy.org/en/latest/topics/item-pipeline.html).
+
