@@ -57,11 +57,12 @@ def get_url_postfixes(self) -> List[str]:
     category and tag pages.
     """
     if self.language == "":
-        return ["", "?sort=-member_count"]
+        return ["", "?sort=-member_count", "?sort=-bumped_at"]
 
     language = f"?fl={self.language}"
     language_and_member_count = f"?fl={self.language}&sort=-member_count"
-    return [language, language_and_member_count]
+    language_and_bumped_at = f"?fl={self.language}&sort=-bumped_at"
+    return [language, language_and_member_count, language_and_bumped_at]
 
 
 def extract_disboard_server_items(

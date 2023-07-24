@@ -28,7 +28,11 @@ def test_has_pagination_links(sample_response):
 
 def test_get_url_postfixes(spider_mock):
     postfixes = get_url_postfixes(spider_mock)
-    assert postfixes == ["?fl=de", "?fl=de&sort=-member_count"]
+    assert postfixes == [
+        "?fl=de",
+        "?fl=de&sort=-member_count",
+        "?fl=de&sort=-bumped_at",
+    ]
 
 
 def test_extract_disboard_server_items(sample_response):
@@ -54,7 +58,7 @@ def test_request_next_url(spider_mock, sample_response):
 
 def test_request_all_category_urls(spider_mock, sample_response):
     requests = list(request_all_category_urls(spider_mock, sample_response))
-    assert len(requests) == 16
+    assert len(requests) == 24
     assert requests[0].url == "https://disboard.org/servers/category/gaming?fl=de"
     assert requests[0].priority == 22 + 25
     assert (
@@ -62,11 +66,16 @@ def test_request_all_category_urls(spider_mock, sample_response):
         == "https://disboard.org/servers/category/gaming?fl=de&sort=-member_count"
     )
     assert requests[1].priority == 22 + 25
+    assert (
+        requests[2].url
+        == "https://disboard.org/servers/category/gaming?fl=de&sort=-bumped_at"
+    )
+    assert requests[2].priority == 22 + 25
 
 
 def test_request_all_tag_urls(spider_mock, sample_response):
     requests = list(request_all_tag_urls(spider_mock, sample_response))
-    assert len(requests) == 280
+    assert len(requests) == 420
     assert requests[0].url == "https://disboard.org/servers/tag/community?fl=de"
     assert requests[0].priority == 22 + 1
     assert (
@@ -74,3 +83,8 @@ def test_request_all_tag_urls(spider_mock, sample_response):
         == "https://disboard.org/servers/tag/community?fl=de&sort=-member_count"
     )
     assert requests[1].priority == 22 + 1
+    assert (
+        requests[2].url
+        == "https://disboard.org/servers/tag/community?fl=de&sort=-bumped_at"
+    )
+    assert requests[2].priority == 22 + 1
