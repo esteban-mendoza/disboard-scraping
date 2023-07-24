@@ -124,11 +124,17 @@ class FlareSolverrRedirectMiddleware:
                 f"Failed to parse JSON response: <{response.status} {response.url}>"
             )
 
+        # NOTE: we are using the headers from the FlareSolverr response
+        # instead of the headers from FlareSolverr's solution response.
+        # We are doing this because as for today (2023-07-24), FlareSolverr
+        # always returns a 200 status code and empty headers.
+        # In the future, we should use the headers from the solution response
+        # like this: headers=solution_response.get("headers")
         html_response = HtmlResponse(
             url=solution_response.get("url"),
             status=solution_response.get("status"),
             body=solution_response.get("response"),
-            headers=solution_response.get("headers"),
+            headers=response.headers,
             request=original_request,
             protocol=response.protocol,
             encoding="utf-8",
