@@ -153,10 +153,10 @@ The project uses the following custom item pipelines:
   track of the servers that have already been scraped.
   
   When a spider finishes its execution it will report two counters:
-  `item_scraped_count/old` and `item_scraped_count/new` that will
-  indicate the number of scraped servers that were already in the
-  database and the number of scraped servers that were not in the
-  database, respectively.
+  `item_scraped_count/new` and `item_scraped_count/old` that will
+  indicate the number of scraped servers that were not in the Redis set
+  associated with the job and the number of scraped servers that were
+  already in the Redis set associated with the job, respectively.
 
 In order to activate or deactivate a pipeline, the `ITEM_PIPELINES`
 variable msut be set in the `settings.py` file. For more information,
@@ -164,4 +164,3 @@ see [_Activating an Item Pipeline Component_](https://docs.scrapy.org/en/latest/
 
 For more information about item pipelines, see
 [Srapy's documentation on Item Pipelines](https://docs.scrapy.org/en/latest/topics/item-pipeline.html).
-
