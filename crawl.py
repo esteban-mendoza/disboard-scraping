@@ -158,14 +158,14 @@ def get_start_urls() -> list:
     by_language_and_bumped_at = (
         f"{prefix}{base_url}/servers?fl={language}&sort=bumped_at"
     )
-    by_language_and_bumped_at_ = (
+    by_language_and_bumped_at_desc = (
         f"{prefix}{base_url}/servers?fl={language}&sort=-bumped_at"
     )
     return [
         by_language,
         by_language_and_members,
         by_language_and_bumped_at,
-        by_language_and_bumped_at_
+        by_language_and_bumped_at_desc
     ]
 
 

@@ -24,16 +24,22 @@ def get_start_urls() -> List[str]:
     base_url = DISBOARD_URL
     prefix = WEBCACHE_URL if os.environ["USE_WEBCACHE"] == "True" else ""
 
-    by_none = f"{prefix}{base_url}/servers"
     by_language = f"{prefix}{base_url}/servers?fl={language}"
     by_language_and_members = (
         f"{prefix}{base_url}/servers?fl={language}&sort=member_count"
     )
+    by_language_and_bumped_at = (
+        f"{prefix}{base_url}/servers?fl={language}&sort=bumped_at"
+    )
+    by_language_and_bumped_at_descdesc = (
+        f"{prefix}{base_url}/servers?fl={language}&sort=-bumped_at"
+    )
 
     return [
-        by_none,
         by_language,
         by_language_and_members,
+        by_language_and_bumped_at,
+        by_language_and_bumped_at_descdesc,
     ]
 
 
