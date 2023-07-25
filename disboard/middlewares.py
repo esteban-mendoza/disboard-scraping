@@ -85,10 +85,7 @@ class FlareSolverrRedirectMiddleware:
             method="POST",
             headers={"Content-Type": "application/json"},
             body=json.dumps(
-                {
-                    "url": request.url,
-                    "cmd": "request.get",
-                }
+                {"url": request.url, "cmd": "request.get", "maxTimeout": 180000}
             ).encode("utf-8"),
             meta={
                 "original_request": request,
